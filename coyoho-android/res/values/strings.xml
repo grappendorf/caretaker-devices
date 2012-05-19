@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="hello">Hello World, CoYoHo!</string>
+    <string name="app_name">CoYoHo</string>
+    <string name="switch_widget_name">CoYoHo Switch</string>
+    <string name="switch_label">Switch</string>
+    <string name="dimmer_widget_name">CoYoHo Dimmer</string>
+    <string name="dimmer_label">Dimmer</string>
+    <string name="configure_switch">Configure Switch</string>
+    <string name="configure_dimmer">Configure Dimmer</string>
+    <string name="server_url">Server URL</string>
+    <string name="device_address">Device Address</string>
+    <string name="switch_number">Switch Number</string>
+    <string name="label">Label</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="single_space">" "</string>
+    <string name="color">Color</string>
+
+    <string-array name="colors">
+        <item>Red</item>
+        <item>Green</item>
+        <item>Yellow</item>
+    </string-array>
+
+    <string name="coyoho_switch_widget_settings">CoYoHo Switch Widget Settings</string>
+    <string name="coyoho_dimmer_widget_settings">CoYoHo Dimmer Widget Settings</string>
+    <string name="back">Back</string>
+    <string name="numberZero">0</string>
+    
+</resources>

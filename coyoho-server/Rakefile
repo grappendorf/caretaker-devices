@@ -1,0 +1,45 @@
+$: << 'app'
+$: << 'config'
+
+require 'rake'
+require 'rake/clean'
+require 'rspec/core/rake_task'
+require 'yaml'
+require 'logger'
+
+CLOBBER.include 'build/*'
+
+task :environment do
+	require 'active_record'
+	dbconfig = YAML::load(File.open('config/database.yml'))
+	logfile = File.open('log/migration.log', 'w')
+	ActiveRecord::Base.logger = Logger.new(logfile)
+	ActiveRecord::Base.establish_connection(dbconfig['development'])
+end
+
+desc 'Create the widgetset.gwt.xml file and compile the widgetset'
+task :widgetset do
+	require 'rubydin_widgetset'
+	require 'rubydin_addons'
+	Rubydin::Widgetset.create
+	Rubydin::Widgetset.compile
+end
+
+desc 'Database migration'
+task :migrate => :environment do
+	require 'db/migrate/migration_helper'
+	version = nil
+	ActiveRecord::Migrator.migrate('db/migrate', version)
+	custom_path = File.expand_path '../../coyoho-private/db/migrate'
+	if File.directory? custom_path
+		ActiveRecord::Migrator.migrate(custom_path, version)		
+	end
+end
+
+desc 'Execute RSpec tests'
+task :spec => :environment do
+	RSpec::Core::RakeTask.new(:spec) do |task|
+		task.rspec_opts = '-I ../net.grappendorf.rubydin.ruby/lib -I app -I config' 
+		task.verbose = true
+	end
+end

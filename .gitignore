@@ -1,0 +1,5 @@
+build/
+coyoho-android/bin/
+coyoho-android/gen/
+coyoho-server/coverage/
+coyoho-server/log/

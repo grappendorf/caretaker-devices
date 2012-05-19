@@ -1,0 +1,5 @@
+require 'rubydin-addons-codemirror'
+require 'rubydin-addons-confirmdialog'
+require 'rubydin-addons-console'
+require 'rubydin-addons-serverpush'
+require 'rubydin-addons-colorpicker'

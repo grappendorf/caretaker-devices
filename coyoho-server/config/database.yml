@@ -1,0 +1,28 @@
+# The # character signifies a comment.
+#
+# Define db config per environment here.
+# yml files are formatted in a very strict way; you cannot insert spaces and tabs randomly.
+# Typically they use two (2) spaces to indent options.
+#
+# The space between the ‘:’ and the configuration values is required.
+
+development:
+  adapter: jdbcpostgresql
+  database: coyoho
+  username: coyoho
+  password: coyoho
+  host: 127.0.0.1
+
+test:
+  adapter: jdbcpostgresql
+  database: coyoho
+  username: coyoho
+  password: coyoho
+  host: 127.0.0.1
+
+production:
+  adapter: jdbcpostgresql
+  database: coyoho
+  username: coyoho
+  password: coyoho
+  host: 127.0.0.1
