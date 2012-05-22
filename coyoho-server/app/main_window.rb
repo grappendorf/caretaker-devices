@@ -70,7 +70,7 @@ class MainWindow < Rubydin::Window
 			navigation_bar.add button
 			button.set_width '100%'
 			button.set_icon Rubydin::ThemeResource.new v.image
-			button.when_clicked { aactivate_view v }
+			button.when_clicked { activate_view v }
 		end
 
 		button_logout = Rubydin::Button.new 'Logout'
