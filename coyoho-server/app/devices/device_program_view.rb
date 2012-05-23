@@ -18,6 +18,12 @@ limitations under the License.
 
 =end
 
+# TODO: Currently there is a bug with CodeMirror. If CodeMirror is used as a form field, the
+# previous CodeMirror is not removed from the form, every second time when the item_data_source
+# is changed.
+# So currently the CodeMirror field is added as a seperate component and the value of the program
+# field is transfered manually.
+
 require 'devices/device_program'
 
 class DeviceProgramView < View
@@ -27,7 +33,7 @@ class DeviceProgramView < View
 	register_as :device_program_view, scope: :session
 
 	TABLE_COLUMNS = [:id, :name, :description, :created_at, :updated_at]
-	FORM_FIELDS = [:name, :description, :program]
+	FORM_FIELDS = [:name, :description]
 
 	def initialize
 		super 'Device Programs', 'Device Programs', 'icons/48/execute.png', 3
@@ -55,7 +61,10 @@ class DeviceProgramView < View
 				t.when_item_clicked {|e| edit e.item_id}
 			end
 			@form = gui.Form
-			@form.form_field_factory = FormFieldFactory.new
+			@form.form_field_factory = Rubydin::ActiveRecordFormFieldFactory.new
+			@program_editor = gui.CodeMirror nil,
+				Rubydin::CodeMirror::MODE_RUBY, Rubydin::CodeMirror::THEME_MONOKAI
+			@program_editor.width = '100%'
 			gui.HorizontalLayout do |h|
 				h.margin = true, false, false, false
 				h.spacing = true
@@ -95,18 +104,22 @@ class DeviceProgramView < View
 	def create
 		item = Rubydin::ActiveRecordItem.new DeviceProgram.new
 		@form.item_data_source = item, FORM_FIELDS
+		@program_editor.value = ''
 		@table.value = nil
 		@form.focus
 	end
 
 	def edit item_id
-		@form.item_data_source = Rubydin::ActiveRecordItem.new(@items.item(item_id).item), FORM_FIELDS
+		item = @items.item(item_id).item
+		@form.item_data_source = Rubydin::ActiveRecordItem.new(item), FORM_FIELDS
+		@program_editor.value = item.program
 		@form.focus
 	end
 
 	def save
 		@form.commit
 		data = @form.item_data_source.data
+		data.program = @program_editor.value
 		if data.save
 			show_notification 'Device program saved'
 		else
@@ -120,6 +133,8 @@ class DeviceProgramView < View
 
 	def discard
 		@form.discard
+		data = @form.item_data_source.data
+		@program_editor.value = data.program
 		@form.focus
 	end
 
@@ -143,15 +158,4 @@ class DeviceProgramView < View
 		end
 	end
 
-	class FormFieldFactory < Rubydin::ActiveRecordFormFieldFactory
-
-		def create_field item, property_id, ui_context
-			if property_id == :program
-				Rubydin::CodeMirror.new create_caption(property_id),
-					Rubydin::CodeMirror::MODE_RUBY, Rubydin::CodeMirror::THEME_COBALT
-			else
-				super
-			end
-		end
-	end
 end
