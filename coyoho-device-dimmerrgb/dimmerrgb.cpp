@@ -22,25 +22,31 @@
 #include <CoYoHoMessages.h>
 #include <CoYoHoListenerManager.h>
 
+/** IO pin numbers */
 const uint8_t PIN_LED_RED = 5;
 const uint8_t PIN_LED_GREEN = 6;
 const uint8_t PIN_LED_BLUE = 9;
 const uint8_t PIN_BUTTON = 7;
 
+/** XBee module */
+XXBee<8> xbee;
+ZBRxResponse rxResponse;
 const long XBEE_BAUD_RATE = 57600;
 
-XXBee<8> xbee;
-
-ZBRxResponse rxResponse;
-
+/** Listeners */
 ListenerManager<4> listenerManager(& xbee);
 
+/** Top switch button */
 Bounce button(PIN_BUTTON, 10);
 
+/** Current RGB values */
 uint8_t red = 0;
 uint8_t green = 0;
 uint8_t blue = 0;
 
+/**
+ * Notify all registered listeners about the current RGB values.
+ */
 void notifyListeners()
 {
 	uint8_t rgbNum = 0;
@@ -49,6 +55,9 @@ void notifyListeners()
 	listenerManager.notifyListeners(message, sizeof(message));
 }
 
+/**
+ * Set the RGB values.
+ */
 void rgb(uint8_t r, uint8_t g, uint8_t b)
 {
 	red = r;
@@ -60,6 +69,9 @@ void rgb(uint8_t r, uint8_t g, uint8_t b)
 	notifyListeners();
 }
 
+/**
+ * Toggle between on (white) and off.
+ */
 void toggle()
 {
 	if (red > 0 || green > 0 || blue > 0)
@@ -72,6 +84,9 @@ void toggle()
 	}
 }
 
+/**
+ * Process all received XBee messages.
+ */
 void processXBeeMessages()
 {
 	xbee.readPacket();
@@ -176,6 +191,9 @@ void processXBeeMessages()
 	}
 }
 
+/**
+ * Main system loop.
+ */
 void loop()
 {
 	listenerManager.checkListenerLeases();
@@ -187,6 +205,9 @@ void loop()
 	}
 }
 
+/**
+ * Main system setup.
+ */
 void setup()
 {
 	pinMode(PIN_LED_RED, OUTPUT);
