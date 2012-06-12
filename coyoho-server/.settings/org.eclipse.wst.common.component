@@ -4,9 +4,10 @@
         <wb-resource deploy-path="/app" source-path="/app"/>
         <wb-resource deploy-path="/config" source-path="/config"/>
         <wb-resource deploy-path="/" source-path="/public"/>
-        <wb-resource deploy-path="/WEB-INF/lib" source-path="/lib/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
         <wb-resource deploy-path="/VAADIN" source-path="/build/VAADIN"/>
+        <wb-resource deploy-path="/Gemfile" source-path="/Gemfile"/>
+        <wb-resource deploy-path="/Gemfile.lock" source-path="/Gemfile.lock"/>
         <property name="java-output-path" value="/coyoho-server/src/main/webapp/WEB-INF/classes"/>
         <property name="context-root" value="coyoho-server"/>
     </wb-module>

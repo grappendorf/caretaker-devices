@@ -46,8 +46,10 @@ class ConsoleView < View
 
 	def create_content
 		Rubydin::Console.new.tap do |console|
+			console.width = '100%'
+			console.height = '100%'
 			console.ps = "#{application.user.name} >"
-			console.cols = 500
+			console.cols = 120
 			console.rows = 40
 			console.max_buffer_size = 20
 			console.greeting = 'CoYoHo Console'

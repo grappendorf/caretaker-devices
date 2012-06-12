@@ -18,18 +18,20 @@ limitations under the License.
 
 =end
 
-require 'devices/abstract_device'
+require 'devices/device'
 require 'devices/xbee_device'
 
-require 'devices/xbee_device'
-
-class CameraDevice < AbstractDevice
+class CameraDevice < Device
 	
 	include DeviceConnectionState
 	include XbeeDevice
 
-	acts_as_heir_of :device
-	
+	property :host, String, length:255
+	property :port, Integer
+	property :user, String, length:255
+	property :password, String, length:255
+	property :refresh_interval, Integer
+
 	def icon
 		@icon ||= Rubydin::ThemeResource.new 'icons/32/camera.png'
 	end

@@ -18,16 +18,20 @@ limitations under the License.
 
 =end
 
-require 'devices/abstract_device'
+require 'devices/device'
 require 'devices/xbee_device'
 
-class SwitchDevice < AbstractDevice
+class SwitchDevice < Device
 	
 	include DeviceConnectionState
 	include XbeeDevice
 	
-	acts_as_heir_of :device
-	
+	property :num_switches, Integer
+	property :switches_per_row, Integer
+
+	validates_presence_of :num_switches
+	validates_presence_of :switches_per_row
+
 	ON = 1
 	OFF = 0
 	

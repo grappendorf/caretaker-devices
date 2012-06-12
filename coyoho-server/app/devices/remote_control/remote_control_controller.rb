@@ -20,4 +20,36 @@ limitations under the License.
 
 class RemoteControlController < DeviceController
 
+	ICON_ON = Rubydin::ThemeResource.new 'icons/32/ledgreen.png'
+	ICON_OFF = Rubydin::ThemeResource.new 'icons/32/empty.png'
+
+	def create_control_component
+		
+		columns = @device.buttons_per_row
+		rows = @device.num_buttons / @device.buttons_per_row
+
+		grid = Rubydin::GridLayout.new columns, rows
+		grid.spacing = true
+
+		@buttons = (0...rows).x(0...columns).map do |row,col|
+			button_num = row * columns + col
+			button = Rubydin::Button.new((button_num + 1).to_s)
+			button.icon = ICON_OFF
+			button.when_clicked do
+				@device.toggle button_num
+			end
+			grid.add_at button, col, row
+			button
+		end
+		
+		@device.when_changed do 
+			(0...(@device.num_buttons)).each do |i| 
+				@buttons[i].icon = @device.pressed?(i) ? ICON_ON : ICON_OFF
+			end
+			push
+		end
+		
+		grid		
+	end
+
 end

@@ -32,14 +32,13 @@ class LoginWindow < Rubydin::Window
 	inject :settings
 
 	def init
-		set_caption = 'CoYoHo - Login'
-		content = Rubydin::VerticalLayout.new
-		content.size_full
-		set_content content
+		self.caption = 'CoYoHo - Login'
+		self.content = Rubydin::VerticalLayout.new
+		self.content.full_size
 
 		panel = Rubydin::Panel.new 'Welcome to CoYoHo!'
-		content.add panel
-		content.align panel, Rubydin::Alignment::MIDDLE_CENTER
+		self.content.add panel
+		self.content.align panel, Rubydin::Alignment::MIDDLE_CENTER
 
 		loginForm = Rubydin::LoginForm.new
 		panel.add loginForm

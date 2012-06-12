@@ -24,33 +24,37 @@ SOFTWARE.
 
 =end
 
+require 'rubygems'
+require 'bundler/setup'
 require 'logger'
 require 'logging'
 require 'yaml'
-require 'active_record'
-require 'simplecov'
+require 'data_mapper'
+
+#require 'simplecov'
+# SimpleCov.start do
+	# root '/home/grappendorf/workspace-grapelabs/net.grappendorf.coyoho.server'
+	# command_name 'cucumber'
+# end
+
+environment_name = 'development'
 
 Logging.appenders.stdout.layout = Logging.layouts.pattern(pattern: '[%d] %-5l: (%c) %m\n') 
 Logging.logger.root.appenders = Logging.appenders.stdout
 Logging.logger.root.level = :info
 
-SimpleCov.start do
-	root '/home/grappendorf/workspace-grapelabs/net.grappendorf.coyoho.server'
-	command_name 'cucumber'
-end
-
 dbconfig = YAML::load(File.open(File.dirname(File.expand_path(__FILE__)) + '/database.yml'))
-ActiveRecord::Base.establish_connection(dbconfig['development'])
+DataMapper.setup(:default, dbconfig[environment_name])
 
 $CONFIG = {}
-config_yml = File.dirname(File.expand_path(__FILE__)) + "/environments/#{ENV['USER']}.yml"
+config_yml = File.dirname(File.expand_path(__FILE__)) + "/environments/#{environment_name}.yml"
 begin
 	$CONFIG = YAML::load File.open config_yml
 rescue Exception => x
 	puts "Unable to load configuration file '#{config_yml}' : #{x.message}"
 end
 
-config_rb = File.dirname(File.expand_path(__FILE__)) + "/environments/#{ENV['USER']}.rb"
+config_rb = File.dirname(File.expand_path(__FILE__)) + "/environments/#{environment_name}.rb"
 begin
 	eval File.open(config_rb).read
 rescue Exception => x
@@ -62,13 +66,11 @@ end
 end  
 
 require 'rubydin'
-require 'rubydin-optional'
+require 'rubydin-optional-di'
+require 'rubydin-optional-datamapper'
 require 'rubydin_addons'
-require 'rails'
 require 'util/string_helpers'
 require 'util/range_helpers'
-require 'util/dependency_injection'
-require 'util/heritage'
 require 'rufus/scheduler'
 require 'thread_storm'
 require 'auth/securable'
@@ -80,15 +82,15 @@ require 'console_view'
 require 'help_view'
 require 'settings/settings_view'
 require 'devices/device_manager'
+require 'devices/device_program_manager'
 require 'devices/device_view'
 require 'devices/device_program_view'
 require 'webservices/rest_api_servlet'
+require 'models'
 
 def exit
 	Java::java.lang.System.exit 0
 end
-
-micon.activate :session, SessionScope.new
 
 register(:logger) {Logger.new STDERR}
 
@@ -97,3 +99,4 @@ register(:scheduler) {Rufus::Scheduler.start_new}
 register(:async) {ThreadStorm.new size:2}
 
 lookup(:device_manager).start
+lookup(:device_program_manager).start

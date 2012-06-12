@@ -27,25 +27,25 @@ class MainWindow < Rubydin::Window
 	attr_reader :content_panel
 
 	def init
-		set_caption 'CoYoHo - Control Your Home!'
+		self.caption = 'CoYoHo - Control Your Home!'
 
 		hbox = Rubydin::HorizontalLayout.new
 		hbox.margin = true
-		hbox.size_full
-		set_content hbox
+		hbox.full_size
+		self.content = hbox
 
 		navigation_bar = create_navigation_bar
-		hbox.add_component navigation_bar
+		hbox.add navigation_bar
 
 		content_box = Rubydin::VerticalLayout.new
-		hbox.add_component content_box
+		hbox.add content_box
 		hbox.expand content_box, 1.0
-		content_box.set_size_full
+		content_box.full_size
 
 		@content_panel = Rubydin::Panel.new
 		content_box.add @content_panel
 		content_box.expand @content_panel, 1.0
-		@content_panel.set_size_full
+		@content_panel.full_size
 
 		footer = Rubydin::Label.new(((application != nil and application.user != nil) ? 'Logged in as <b>' +
 		application.user.name + '</b>' : '') +
@@ -60,30 +60,30 @@ class MainWindow < Rubydin::Window
 
 	def create_navigation_bar
 		navigation_bar = Rubydin::VerticalLayout.new
-		navigation_bar.set_margin false, true, false, false
-		navigation_bar.set_spacing true
-		navigation_bar.set_width '15em'
+		navigation_bar.margin = false, true, false, false
+		navigation_bar.spacing = true
+		navigation_bar.width = '15em'
 
 		views = application.views.select{|v|v.allowed? :view}.sort{|v1,v2| v1.position <=> v2.position}
 		views.each do |v|
 			button = Rubydin::Button.new v.name
 			navigation_bar.add button
-			button.set_width '100%'
-			button.set_icon Rubydin::ThemeResource.new v.image
+			button.width = '100%'
+			button.icon = Rubydin::ThemeResource.new v.image
 			button.when_clicked { activate_view v }
 		end
 
 		button_logout = Rubydin::Button.new 'Logout'
 		navigation_bar.add button_logout
-		button_logout.set_width '100%'
-		button_logout.set_icon Rubydin::ThemeResource.new 'icons/48/exit.png'
-		button_logout.when_clicked { application.set_user nil }
+		button_logout.width = '100%'
+		button_logout.icon = Rubydin::ThemeResource.new 'icons/48/exit.png'
+		button_logout.when_clicked { application.user = nil }
 
 		if application.user.roles.include? :admin
 			button_terminate = Rubydin::Button.new 'Terminate'
 			navigation_bar.add button_terminate
-			button_terminate.set_width '100%'
-			button_terminate.set_icon Rubydin::ThemeResource.new 'icons/48/bomb.png'
+			button_terminate.width = '100%'
+			button_terminate.icon = Rubydin::ThemeResource.new 'icons/48/bomb.png'
 			button_terminate.when_clicked { exit }
 		end
 

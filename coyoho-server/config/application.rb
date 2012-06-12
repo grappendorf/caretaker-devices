@@ -8,7 +8,7 @@ Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software i 
+copies of the Software, and to permit persons to whom the Software i
 furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
@@ -24,13 +24,10 @@ SOFTWARE.
 
 =end
 
-require 'util/dependency_injection'
-require 'util/session_scope'
-
 class CoYoHoApplication < Rubydin::Application
 
 	inject :dashboard_view, :console_view, :help_view, :settings_view,
-				:device_view, :device_program_view, :sysinfo_view
+				:sysinfo_view, :device_program_view, :device_view
 
 	attr_reader :views
 
@@ -42,7 +39,7 @@ class CoYoHoApplication < Rubydin::Application
 		@push = Rubydin::ServerPush.new '/coyoho'
 
 		@views = [dashboard_view, console_view, help_view, settings_view,
-			device_view, device_program_view, sysinfo_view]
+			sysinfo_view, device_program_view, device_view]
 
 		set_theme 'coyoho'
 
@@ -54,18 +51,16 @@ class CoYoHoApplication < Rubydin::Application
 		when_user_changed do |e|
 			if e.new_user
 				@login_window.when_closed_do_nothing
-				get_main_window.open Rubydin::ExternalResource.new get_url
+				get_main_window.open Rubydin::ExternalResource.new url
 				@main_window = MainWindow.new
 				@main_window.when_closed {close}
 				set_main_window @main_window
-			@main_window.init
-			@main_window.content.add_component @push
+				@main_window.init
+				@main_window.content.add_component @push
 			else
 				close
 			end
 		end
-
-		when_transaction_end {ActiveRecord::Base.clear_active_connections!}
 
 		register(:application, :scope => :session) {self}
 

@@ -38,17 +38,29 @@ class DeviceManager
 
 	attr_reader :devices
 
+	def initialize 
+		@logger = Logging.logger[DeviceManager]
+		@devices = []
+		@devices_by_address = {}
+	end
+
 	def start
+		@logger.info 'Device Manager starting'
 		xbee.when_message_received {|m| xbee_message_received m}
 		xbee.start
-		@devices = Device.all
-		@devices_by_address = {}
-		@devices.each do |device|
+		# TODO: DataMapper doesn't load the attributes of the Device descendants
+		# when using all() and it even doesn't load them lazy (they are nil not <not loaded>).
+		# Only get() loads the attributes correctly, so as a workaround we first load the
+		# device ids and then load the devices with get().
+		device_ids = Device.all fields:[:id]
+		device_ids.each do |id|
+			device = Device.get id.id
+			@devices << device
 			begin
-				@devices_by_address[device.address] = device.heir
+				@devices_by_address[device.address] = device
 			rescue
 			end
-			device.heir.start_device_connection_state
+			device.start_device_connection_state
 		end
 	end
 

@@ -37,8 +37,7 @@ class View
 	end
 
 	def content
-		@content = create_content if not @content
-		@content
+		@content ||= create_content
 	end
 
 	def show_notification caption, type = Rubydin::Notification::TYPE_HUMANIZED_MESSAGE

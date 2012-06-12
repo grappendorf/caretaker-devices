@@ -27,7 +27,7 @@ class DeviceController < Rubydin::HorizontalLayout
 		super()
 		
 		@device = device
-		width 100, Rubydin::Units::PERCENTAGE
+		self.width = '100%'
 		
 		show_config_button = Rubydin::Button.new
 		add show_config_button
@@ -40,7 +40,7 @@ class DeviceController < Rubydin::HorizontalLayout
 		
 		vlayout = Rubydin::VerticalLayout.new
 		add vlayout
-		expand_ratio vlayout, 1.0
+		expand vlayout, 1.0
 		
 		@control_component = create_control_component
 		@control_component.margin = false, true, true, true

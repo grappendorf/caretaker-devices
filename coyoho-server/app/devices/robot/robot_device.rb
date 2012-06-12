@@ -18,15 +18,13 @@ limitations under the License.
 
 =end
 
-require 'devices/abstract_device'
+require 'devices/device'
 require 'devices/xbee_device'
 
-class RobotDevice < AbstractDevice
+class RobotDevice < Device
 
 	include DeviceConnectionState
 	include XbeeDevice
-
-	acts_as_heir_of :device
 
 	def icon
 		@icon ||= Rubydin::ThemeResource.new 'icons/32/cat.png'

@@ -71,7 +71,6 @@ module DeviceConnectionState
 				@logger.debug "Registration with device #{name} timed out"
 				@machine.timeout
 			end
-			ActiveRecord::Base.clear_active_connections!
 		end
 	end
 

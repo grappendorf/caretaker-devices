@@ -1,20 +1,22 @@
 $: << 'app'
 $: << 'config'
 
+require 'rubygems'
+require 'bundler/setup'
 require 'rake'
 require 'rake/clean'
-require 'rspec/core/rake_task'
 require 'yaml'
 require 'logger'
+
+environment_name = 'development'
 
 CLOBBER.include 'build/*'
 
 task :environment do
-	require 'active_record'
+	require 'data_mapper'
 	dbconfig = YAML::load(File.open('config/database.yml'))
-	logfile = File.open('log/migration.log', 'w')
-	ActiveRecord::Base.logger = Logger.new(logfile)
-	ActiveRecord::Base.establish_connection(dbconfig['development'])
+	DataMapper::Logger.new($stdout, :debug)
+	DataMapper.setup(:default, dbconfig[environment_name])
 end
 
 desc 'Create the widgetset.gwt.xml file and compile the widgetset'
@@ -27,19 +29,53 @@ end
 
 desc 'Database migration'
 task :migrate => :environment do
+	require 'dm-migrations/migration_runner'
 	require 'db/migrate/migration_helper'
-	version = nil
-	ActiveRecord::Migrator.migrate('db/migrate', version)
+	require 'models'
+	DataMapper.auto_migrate!
+	#p Dir['db/migrate/*.rb']
+	# require 'db/migrate/migration_helper'
+	# version = nil
+	# ActiveRecord::Migrator.migrate('db/migrate', version)
 	custom_path = File.expand_path '../../coyoho-private/db/migrate'
 	if File.directory? custom_path
-		ActiveRecord::Migrator.migrate(custom_path, version)		
+		Dir[custom_path + '/*.rb'].each do |migration|
+			load migration
+		end
 	end
+	migrate_up!
+end
+
+desc 'Create a new database (deletes an old one!)'
+task :createdb do
+	FileUtils.rm_f File.expand_path 'coyoho.db', ENV['HOME']
+	Rake::Task['migrate'].invoke
 end
 
 desc 'Execute RSpec tests'
 task :spec => :environment do
+	require 'rspec/core/rake_task'
 	RSpec::Core::RakeTask.new(:spec) do |task|
 		task.rspec_opts = '-I ../net.grappendorf.rubydin.ruby/lib -I app -I config' 
 		task.verbose = true
 	end
+end
+
+desc 'Create a new migration file in db/migrate. Call with name=migration_name'
+task :createmigration do
+	name = ENV['name']
+	stamp = Time.now.strftime '%Y%m%d%H%M%S'
+	filename = File.expand_path "db/migrate/#{stamp}_#{name}.rb"
+	content = <<-EOS
+	migration #{stamp}, :#{name} do
+	
+		up do
+		end
+		
+		down do
+		end
+		
+	end 
+	EOS
+	File.open(filename, 'w') {|f| f.write content.gsub(/^\t/, '')}
 end

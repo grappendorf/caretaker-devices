@@ -18,10 +18,40 @@ limitations under the License.
 
 =end
 
-require 'util/heritage'
+require 'devices/device_connection_state'
 
-class Device < ActiveRecord::Base
+class Device
 	
-	acts_as_predecessor
+	include DataMapper::Resource
 
+	property :id, Serial
+	property :type, Discriminator
+	property :name, String, length:255, required:true, default:''
+	property :address, String, length:255, default:''
+	property :created_at, DateTime
+	property :updated_at, DateTime	
+
+	def change_listeners
+		@change_listeners ||= []
+	end
+
+	def when_changed &block
+		change_listeners << block
+	end
+
+	def notify_change_listeners
+		change_listeners.each {|l| l.call self}
+	end
+
+	def update
+	end
+
+	def icon
+		@icon ||= Rubydin::ThemeResource.new 'icons/32/joystick.png'
+	end
+
+	def load_descendant_attributes
+		attributes.each{|a| attribute_get a[0]}
+		p attributes
+	end
 end

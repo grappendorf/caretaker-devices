@@ -18,17 +18,21 @@ limitations under the License.
 
 =end
 
-require 'devices/abstract_device'
 require 'net/http'
 require 'uri'
+require 'devices/device'
+require 'util/executor'
 
-class IpCameraDevice < AbstractDevice
+class IpCameraDevice < Device
 
 	include NullDeviceConnectionState
+	include Executor
 
-	acts_as_heir_of :device
-
-	inject :async
+	property :host, String, length:255
+	property :port, Integer
+	property :user, String, length:255
+	property :password, String, length:255
+	property :refresh_interval, Integer
 
 	def icon
 		@icon ||= Rubydin::ThemeResource.new 'icons/32/camera.png'
@@ -41,7 +45,7 @@ class IpCameraDevice < AbstractDevice
 	end
 
 	def up
-		async.execute do
+		async do
 			send_command '0'
 			sleep 1
 			send_command '1'
@@ -49,7 +53,7 @@ class IpCameraDevice < AbstractDevice
 	end
 
 	def down
-		async.execute do
+		async do
 			send_command '2'
 			sleep 1
 			send_command '3'
@@ -57,7 +61,7 @@ class IpCameraDevice < AbstractDevice
 	end
 
 	def left
-		async.execute do
+		async do
 			send_command '4'
 			sleep 1
 			send_command '5'
@@ -65,7 +69,7 @@ class IpCameraDevice < AbstractDevice
 	end
 
 	def right
-		async.execute do
+		async do
 			send_command '6'
 			sleep 1
 			send_command '7'

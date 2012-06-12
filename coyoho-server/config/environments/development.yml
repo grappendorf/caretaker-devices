@@ -1,0 +1,13 @@
+settings_file: /home/grappendorf/coyoho-settings.yml
+
+#auto_login:
+#  username: admin
+#  password: admin
+
+# auto_login:
+  # username: user
+  # password: user
+
+logger:
+  DeviceConnectionState:
+    level: :info

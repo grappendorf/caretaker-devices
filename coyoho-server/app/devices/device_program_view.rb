@@ -32,36 +32,39 @@ class DeviceProgramView < View
 
 	register_as :device_program_view, scope: :session
 
-	TABLE_COLUMNS = [:id, :name, :description, :created_at, :updated_at]
-	FORM_FIELDS = [:name, :description]
+	TABLE_COLUMNS = [:id, :enabled, :name, :description, :created_at, :updated_at, :actions]
+	FORM_FIELDS = [:enabled, :name, :description]
 
 	def initialize
 		super 'Device Programs', 'Device Programs', 'icons/48/execute.png', 3
-	end
+	end 
 
 	def create_content
-
-		@items = Rubydin::ActiveRecordContainer.new DeviceProgram
+ 
+		@items = Rubydin::DataMapperContainer.new DeviceProgram
 
 		gui = Rubydin::Builder.new
 		content = gui.VerticalLayout do
 			@table = gui.Table 'Remote Control Programs', @items do |t|
 				t.selectable = true
-				t.size_full
+				t.immediate = true
+				t.full_size
+				t.generated_column :enabled, &Rubydin::Table.boolean_image_column
+				t.generated_column :actions, do |source, item_id, column_id|
+					create_action_buttons item_id
+				end
 				t.visible_columns TABLE_COLUMNS
 				t.column_expand_ratio :description, 1.0
+				t.column_header :enabled, 'Enabled'
 				t.column_header :name, 'Name'
 				t.column_header :description, 'Description'
 				t.column_header :created_at, 'Created at'
 				t.column_header :updated_at, 'Updated at'
 				t.column_header :actions, ''
-				t.generated_column :actions, do |source, item_id, column_id|
-					create_action_buttons item_id
-				end
-				t.when_item_clicked {|e| edit e.item_id}
+				t.when_selection_changed {|e| edit e.property.value}
 			end
 			@form = gui.Form
-			@form.form_field_factory = Rubydin::ActiveRecordFormFieldFactory.new
+			@form.form_field_factory = Rubydin::DataMapperFormFieldFactory.new
 			@program_editor = gui.CodeMirror nil,
 				Rubydin::CodeMirror::MODE_RUBY, Rubydin::CodeMirror::THEME_MONOKAI
 			@program_editor.width = '100%'
@@ -102,7 +105,7 @@ class DeviceProgramView < View
 	end
 
 	def create
-		item = Rubydin::ActiveRecordItem.new DeviceProgram.new
+		item = Rubydin::DataMapperItem.new DeviceProgram.new
 		@form.item_data_source = item, FORM_FIELDS
 		@program_editor.value = ''
 		@table.value = nil
@@ -110,10 +113,14 @@ class DeviceProgramView < View
 	end
 
 	def edit item_id
-		item = @items.item(item_id).item
-		@form.item_data_source = Rubydin::ActiveRecordItem.new(item), FORM_FIELDS
-		@program_editor.value = item.program
-		@form.focus
+		if item_id
+			item = @items.item(item_id).item
+			@form.item_data_source = Rubydin::DataMapperItem.new(item), FORM_FIELDS
+			@program_editor.value = item.program
+			@form.focus
+		else
+			create
+		end
 	end
 
 	def save
@@ -125,9 +132,9 @@ class DeviceProgramView < View
 		else
 			show_notification 'Device program validation failed'
 		end
-		# @table.value = data.id
 		@table.container_data_source = @items
 		@table.visible_columns TABLE_COLUMNS
+		@table.value = data.id
 		@form.focus
 	end
 
@@ -139,12 +146,9 @@ class DeviceProgramView < View
 	end
 
 	def delete id = nil
+		id = @form.item_data_source.data.id unless id
 		if id
-			table.value = id
-			edit
-		end
-		data = @form.item_data_source.data
-		if data.id
+			data = @items.item(id).item
 			Rubydin::ConfirmDialog::show window, 'Confirm deletion',
 			"Do you really want to<br />delete device program <b>#{data.name}</b>?",
 			'Yes', 'No' do |dialog|

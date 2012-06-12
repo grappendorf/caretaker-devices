@@ -24,7 +24,9 @@ class SwitchController < DeviceController
 	ICON_OFF = Rubydin::ThemeResource.new 'icons/32/empty.png'
 
 	def create_control_component
-		
+
+		p @device.class
+				
 		columns = @device.switches_per_row
 		rows = @device.num_switches / @device.switches_per_row
 

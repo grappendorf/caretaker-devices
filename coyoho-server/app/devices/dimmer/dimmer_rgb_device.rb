@@ -18,15 +18,13 @@ limitations under the License.
 
 =end
 
-require 'devices/abstract_device'
+require 'devices/device'
 require 'devices/xbee_device'
 
-class DimmerRgbDevice < AbstractDevice
+class DimmerRgbDevice < Device
 
 	include DeviceConnectionState
 	include XbeeDevice
-
-	acts_as_heir_of :device
 
 	def rgb
 		@rgb ||= [0, 0, 0]

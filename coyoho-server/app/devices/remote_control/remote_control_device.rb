@@ -18,21 +18,42 @@ limitations under the License.
 
 =end
 
-require 'devices/abstract_device'
+require 'devices/device'
 require 'devices/xbee_device'
 
-class RemoteControlDevice < AbstractDevice
+class RemoteControlDevice < Device
 
 	include DeviceConnectionState
 	include XbeeDevice
 
-	acts_as_heir_of :device
+	property :num_buttons, Integer
+	property :buttons_per_row, Integer
+	
+	validates_presence_of :num_buttons
+	validates_presence_of :buttons_per_row
+
+	PRESSED = 1
+	RELEASED = 0
 
 	def icon
 		@icon ||= Rubydin::ThemeResource.new 'icons/32/gamepad.png'
 	end
 
+	def states
+		@states ||= Array.new(num_buttons, RELEASED)
+	end
+
+	def pressed? button_num
+		states[button_num] == PRESSED
+	end
+
 	def message_received message
+		if message[0] == CoYoHoMessages::COYOHO_SWITCH_READ
+			button_num = message[1]
+			value = message[2]
+			states[button_num] = value
+			notify_change_listeners
+		end
 	end
 
 end

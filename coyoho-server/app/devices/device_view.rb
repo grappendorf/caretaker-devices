@@ -53,7 +53,7 @@ class DeviceView < View
 			end
 			gui.Table do |t|
 				@device_table = t
-				t.size_full
+				t.full_size
 				t.container_property :check, Rubydin::CheckBox
 				t.container_property :device, Rubydin::Component
 				t.container_property :connection, Rubydin::Embedded
@@ -65,10 +65,10 @@ class DeviceView < View
 				t.column_expand_ratio :control, 1.0
 
 				device_manager.devices.each do |device|
-					controller = device.heir_type.sub('Device', 'Controller').constantize.new device.heir
-					t.add_item device.id, [Rubydin::CheckBox.new, create_device_info(device),
-						Rubydin::Embedded.new(device.heir.connected? ? CONNECTED_ICON : DISCONNECTED_ICON), controller]
-					device.heir.when_connection_changed {|d| device_connection_changed d}
+					controller = device.type.to_s.sub('Device', 'Controller').constantize.new device
+					t.add_item device.id, Rubydin::CheckBox.new, create_device_info(device),
+						Rubydin::Embedded.new(device.connected? ? CONNECTED_ICON : DISCONNECTED_ICON), controller
+					device.when_connection_changed {|d| device_connection_changed d}
 				end
 			end
 		end
@@ -76,12 +76,11 @@ class DeviceView < View
 
 	def create_device_info device
 		comp = Rubydin::VerticalLayout.new
-		comp.add Rubydin::HTMLLabel.new "<b>#{device.name}</b>"
-		comp.add Rubydin::Embedded.new device.heir.icon, device.heir_type
+		comp.add Rubydin::HTMLLabel.new "<img src=\"\" /><b>#{device.name}</b>"
 		comp.add Rubydin::Label.new device.address
 		comp
 	end
-	
+
 	def device_connection_changed device
 		item = @device_table.item(device.predecessor.id)
 		icon = Rubydin::Embedded.new(device.connected? ? CONNECTED_ICON : DISCONNECTED_ICON)

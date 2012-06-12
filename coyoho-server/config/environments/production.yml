@@ -1,0 +1,5 @@
+settings_file: /var/lib/coyoho/coyoho-settings.yml
+
+logger:
+  DeviceConnectionState:
+    level: :info

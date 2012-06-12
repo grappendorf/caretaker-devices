@@ -7,22 +7,13 @@
 # The space between the ‘:’ and the configuration values is required.
 
 development:
-  adapter: jdbcpostgresql
-  database: coyoho
-  username: coyoho
-  password: coyoho
-  host: 127.0.0.1
+  adapter: sqlite
+  database: /home/grappendorf/coyoho.db
 
 test:
-  adapter: jdbcpostgresql
-  database: coyoho
-  username: coyoho
-  password: coyoho
-  host: 127.0.0.1
+  adapter: sqlite
+  database: /home/grappendorf/coyoho.db
 
 production:
-  adapter: jdbcpostgresql
-  database: coyoho
-  username: coyoho
-  password: coyoho
-  host: 127.0.0.1
+  adapter: sqlite
+  database: /var/lib/coyoho/coyoho.db
