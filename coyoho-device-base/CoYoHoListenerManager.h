@@ -24,8 +24,6 @@
 
 #define COYOHO_LISTENER_LEASE_TIME (10L * 60L * 1000L)
 
-#define COYOHO_LISTENER_MINIMUM_NOTIFY_INTERVAL (100)
-
 template<int MAX_LISTENERS> class ListenerManager
 {
 	public:
@@ -97,17 +95,13 @@ template<int MAX_LISTENERS> class ListenerManager
 
 	void notifyListeners(uint8_t *message, uint8_t messageSize)
 	{
-		if (millis() > nextListenerNotifyMillis)
+		for (uint8_t i = 0; i < MAX_LISTENERS; ++i)
 		{
-			for (uint8_t i = 0; i < MAX_LISTENERS; ++i)
+			if (listener[i].getMsb() != 0 && listener[i].getLsb() != 0)
 			{
-				if (listener[i].getMsb() != 0 && listener[i].getLsb() != 0)
-				{
-					ZBTxRequest txRequest(listener[i], message, messageSize);
-					xbee->send(txRequest);
-				}
+				ZBTxRequest txRequest(listener[i], message, messageSize);
+				xbee->send(txRequest);
 			}
-			nextListenerNotifyMillis = millis() + COYOHO_LISTENER_MINIMUM_NOTIFY_INTERVAL;
 		}
 	}
 
