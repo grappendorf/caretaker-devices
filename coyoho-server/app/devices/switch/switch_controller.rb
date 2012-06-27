@@ -25,8 +25,6 @@ class SwitchController < DeviceController
 
 	def create_control_component
 
-		p @device.class
-				
 		columns = @device.switches_per_row
 		rows = @device.num_switches / @device.switches_per_row
 

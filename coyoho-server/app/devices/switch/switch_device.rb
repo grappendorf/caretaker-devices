@@ -35,6 +35,10 @@ class SwitchDevice < Device
 	ON = 1
 	OFF = 0
 	
+	def self.icon
+		@@icon ||= Rubydin::ThemeResource.new 'icons/32/joystick.png'
+	end
+
 	def states
 		@states ||= Array.new(num_switches, OFF)
 	end

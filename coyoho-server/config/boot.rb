@@ -82,9 +82,9 @@ require 'console_view'
 require 'help_view'
 require 'settings/settings_view'
 require 'devices/device_manager'
-require 'devices/device_program_manager'
+require 'devices/device_script_manager'
 require 'devices/device_view'
-require 'devices/device_program_view'
+require 'devices/device_script_view'
 require 'webservices/rest_api_servlet'
 require 'models'
 
@@ -99,4 +99,4 @@ register(:scheduler) {Rufus::Scheduler.start_new}
 register(:async) {ThreadStorm.new size:2}
 
 lookup(:device_manager).start
-lookup(:device_program_manager).start
+lookup(:device_script_manager).start

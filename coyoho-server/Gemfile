@@ -16,6 +16,7 @@ gem 'rubydin-addons-confirmdialog', '~>1.2.0.1'
 gem 'rubydin-addons-console', '~>1.1.6.1'
 gem 'rubydin-addons-serverpush', '~>1.0.6.1'
 gem 'rubydin-addons-colorpicker', '~>1.1.0.1'
+gem 'rubydin-addons-wizardsforvaadin', '~>0.4.4.1'
 
 gem 'virtus', '~>0.5'
 gem 'dm-core', '1.3.0.beta', git: 'https://github.com/datamapper/dm-core'

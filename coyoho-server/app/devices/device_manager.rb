@@ -53,14 +53,9 @@ class DeviceManager
 		# Only get() loads the attributes correctly, so as a workaround we first load the
 		# device ids and then load the devices with get().
 		device_ids = Device.all fields:[:id]
-		device_ids.each do |id|
+		device_ids.each do |id|			
 			device = Device.get id.id
-			@devices << device
-			begin
-				@devices_by_address[device.address] = device
-			rescue
-			end
-			device.start_device_connection_state
+			add_device device
 		end
 	end
 
@@ -87,4 +82,23 @@ class DeviceManager
 		@devices_by_address[address]
 	end
 
+	def add_device device
+		@devices << device
+		if device.address
+			@devices_by_address[device.address] = device
+		end
+		device.start_device_connection_state
+	end
+	
+	def create_device device
+		if device.save
+			add_device
+		end
+	end
+	
+	def delete_device device_id
+		device = @devices[@devices.index{|d| d.id == device_id}]
+		@devices.delete device
+		device.destroy
+	end
 end

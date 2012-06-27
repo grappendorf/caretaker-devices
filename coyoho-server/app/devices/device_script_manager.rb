@@ -18,31 +18,31 @@ limitations under the License.
 
 =end
 
-# Device programs are stored in the database and should define two functions: start() and and 
-# stop(). When the system starts up, all enabled programs are loaded, evaluated and their start()
-# function is called. If a program is modified, its stop() function is called, it is 
+# Device script are stored in the database and should define two functions: start() and and 
+# stop(). When the system starts up, all enabled scripts are loaded, evaluated and their start()
+# function is called. If a script is modified, its stop() function is called, it is 
 # re-evaluated and then its start() method is called again.
  
-class DeviceProgramManager
+class DeviceScriptManager
 	
-	register_as :device_program_manager
+	register_as :device_script_manager
 
 	def initialize 
-		@logger = Logging.logger[DeviceProgramManager]
+		@logger = Logging.logger[DeviceScriptManager]
 	end
 	
 	def start
-		@logger.info 'Device Program Manager starting'
-		DeviceProgram.all.each do |program|
-			if program.enabled?
-				@logger.info "Starting program #{program.name}"
-				program_class_name = "DeviceProgram#{program.name.capitalize}"
+		@logger.info 'Device Script Manager starting'
+		DeviceScript.all.each do |script|
+			if script.enabled?
+				@logger.info "Starting script #{script.name}"
+				script_class_name = "DeviceScript#{script.name.capitalize}"
 				code = <<-CODE
-					class #{program_class_name}
-						#{program.program}
+					class #{script_class_name}
+						#{script.script}
 					end
-					program = #{program_class_name}.new
-					program.init
+					script = #{script_class_name}.new
+					script.init
 				CODE
 				begin
 					eval code

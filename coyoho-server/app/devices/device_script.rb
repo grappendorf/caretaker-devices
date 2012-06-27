@@ -18,14 +18,14 @@ limitations under the License.
 
 =end
 
-class DeviceProgram
+class DeviceScript
 	
 	include DataMapper::Resource
 
 	property :id, Serial
 	property :name, String, length:255, required:true, default:''
 	property :description, String, length:255, default:''
-	property :program, Text, default:''
+	property :script, Text, default:''
 	property :enabled, Boolean
 	property :created_at, DateTime
 	property :updated_at, DateTime	

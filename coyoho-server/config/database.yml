@@ -8,11 +8,11 @@
 
 development:
   adapter: sqlite
-  database: /home/grappendorf/coyoho.db
+  database: /tmp/coyoho.db
 
 test:
   adapter: sqlite
-  database: /home/grappendorf/coyoho.db
+  database: /tmp/coyoho-test.db
 
 production:
   adapter: sqlite

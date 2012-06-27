@@ -21,31 +21,31 @@ limitations under the License.
 # TODO: Currently there is a bug with CodeMirror. If CodeMirror is used as a form field, the
 # previous CodeMirror is not removed from the form, every second time when the item_data_source
 # is changed.
-# So currently the CodeMirror field is added as a seperate component and the value of the program
+# So currently the CodeMirror field is added as a seperate component and the value of the script
 # field is transfered manually.
 
-require 'devices/device_program'
+require 'devices/device_script'
 
-class DeviceProgramView < View
+class DeviceScriptView < View
 
 	include Securable
 
-	register_as :device_program_view, scope: :session
+	register_as :device_script_view, scope: :session
 
 	TABLE_COLUMNS = [:id, :enabled, :name, :description, :created_at, :updated_at, :actions]
 	FORM_FIELDS = [:enabled, :name, :description]
 
 	def initialize
-		super 'Device Programs', 'Device Programs', 'icons/48/execute.png', 3
+		super 'Device Scripts', 'Device Scripts', 'icons/48/execute.png', 3
 	end 
 
 	def create_content
  
-		@items = Rubydin::DataMapperContainer.new DeviceProgram
+		@items = Rubydin::DataMapperContainer.new DeviceScript
 
 		gui = Rubydin::Builder.new
 		content = gui.VerticalLayout do
-			@table = gui.Table 'Remote Control Programs', @items do |t|
+			@table = gui.Table 'Device Scrtips', @items do |t|
 				t.selectable = true
 				t.immediate = true
 				t.full_size
@@ -65,9 +65,9 @@ class DeviceProgramView < View
 			end
 			@form = gui.Form
 			@form.form_field_factory = Rubydin::DataMapperFormFieldFactory.new
-			@program_editor = gui.CodeMirror nil,
+			@script_editor = gui.CodeMirror nil,
 				Rubydin::CodeMirror::MODE_RUBY, Rubydin::CodeMirror::THEME_MONOKAI
-			@program_editor.width = '100%'
+			@script_editor.width = '100%'
 			gui.HorizontalLayout do |h|
 				h.margin = true, false, false, false
 				h.spacing = true
@@ -105,9 +105,9 @@ class DeviceProgramView < View
 	end
 
 	def create
-		item = Rubydin::DataMapperItem.new DeviceProgram.new
+		item = Rubydin::DataMapperItem.new DeviceScript.new
 		@form.item_data_source = item, FORM_FIELDS
-		@program_editor.value = ''
+		@script_editor.value = ''
 		@table.value = nil
 		@form.focus
 	end
@@ -116,7 +116,7 @@ class DeviceProgramView < View
 		if item_id
 			item = @items.item(item_id).item
 			@form.item_data_source = Rubydin::DataMapperItem.new(item), FORM_FIELDS
-			@program_editor.value = item.program
+			@script_editor.value = item.script
 			@form.focus
 		else
 			create
@@ -126,11 +126,11 @@ class DeviceProgramView < View
 	def save
 		@form.commit
 		data = @form.item_data_source.data
-		data.program = @program_editor.value
+		data.script = @script_editor.value
 		if data.save
-			show_notification 'Device program saved'
+			show_notification 'Device script saved'
 		else
-			show_notification 'Device program validation failed'
+			show_notification 'Device script validation failed'
 		end
 		@table.container_data_source = @items
 		@table.visible_columns TABLE_COLUMNS
@@ -141,7 +141,7 @@ class DeviceProgramView < View
 	def discard
 		@form.discard
 		data = @form.item_data_source.data
-		@program_editor.value = data.program
+		@script_editor.value = data.script
 		@form.focus
 	end
 
@@ -150,7 +150,7 @@ class DeviceProgramView < View
 		if id
 			data = @items.item(id).item
 			Rubydin::ConfirmDialog::show window, 'Confirm deletion',
-			"Do you really want to<br />delete device program <b>#{data.name}</b>?",
+			"Do you really want to<br />delete device script <b>#{data.name}</b>?",
 			'Yes', 'No' do |dialog|
 				if dialog.confirmed?
 					data.destroy

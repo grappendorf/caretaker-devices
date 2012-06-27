@@ -31,6 +31,10 @@ class Device
 	property :created_at, DateTime
 	property :updated_at, DateTime	
 
+	def self.icon
+		@@icon ||= Rubydin::ThemeResource.new 'icons/32/joystick.png'
+	end
+
 	def change_listeners
 		@change_listeners ||= []
 	end
@@ -44,10 +48,6 @@ class Device
 	end
 
 	def update
-	end
-
-	def icon
-		@icon ||= Rubydin::ThemeResource.new 'icons/32/joystick.png'
 	end
 
 	def load_descendant_attributes

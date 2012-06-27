@@ -35,8 +35,8 @@ class RemoteControlDevice < Device
 	PRESSED = 1
 	RELEASED = 0
 
-	def icon
-		@icon ||= Rubydin::ThemeResource.new 'icons/32/gamepad.png'
+	def self.icon
+		@@icon ||= Rubydin::ThemeResource.new 'icons/32/gamepad.png'
 	end
 
 	def states

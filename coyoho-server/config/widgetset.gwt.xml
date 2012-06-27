@@ -19,6 +19,8 @@
 
     <inherits name="org.vaadin.console.ConsoleWidgetset" />
 
+    <inherits name="org.vaadin.teemu.wizards.WizardsforvaadinWidgetset" />
+
     <inherits name="org.vaadin.rpc.WidgetRPC" />
 
     <inherits name="com.vaadin.terminal.gwt.DefaultWidgetSet" />

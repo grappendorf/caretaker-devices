@@ -32,8 +32,8 @@ class CameraDevice < Device
 	property :password, String, length:255
 	property :refresh_interval, Integer
 
-	def icon
-		@icon ||= Rubydin::ThemeResource.new 'icons/32/camera.png'
+	def self.icon
+		@@icon ||= Rubydin::ThemeResource.new 'icons/32/camera.png'
 	end
 	
 	def message_received message

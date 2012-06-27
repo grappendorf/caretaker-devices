@@ -27,7 +27,7 @@ SOFTWARE.
 class CoYoHoApplication < Rubydin::Application
 
 	inject :dashboard_view, :console_view, :help_view, :settings_view,
-				:sysinfo_view, :device_program_view, :device_view
+				:sysinfo_view, :device_script_view, :device_view
 
 	attr_reader :views
 
@@ -39,7 +39,7 @@ class CoYoHoApplication < Rubydin::Application
 		@push = Rubydin::ServerPush.new '/coyoho'
 
 		@views = [dashboard_view, console_view, help_view, settings_view,
-			sysinfo_view, device_program_view, device_view]
+			sysinfo_view, device_script_view, device_view]
 
 		set_theme 'coyoho'
 

@@ -27,16 +27,32 @@ task :widgetset do
 	Rubydin::Widgetset.compile
 end
 
+desc 'Deploy the web application'
+task :deploy do
+	jetty_home = ENV['JETTY_HOME']
+	if not jetty_home
+		raise 'No JETTY_HOME defined. Please install Jetty'
+	end
+	webapp_path = File.expand_path 'webapps/coyoho', jetty_home
+	FileUtils.mkdir_p webapp_path
+	[
+		'app', 'config', 
+		'public/META-INF', 'public/WEB-INF', 'public/VAADIN',
+		'build/VAADIN',	'Gemfile', 'Gemfile.lock'
+	].each do |src|
+		FileUtils.cp_r src, webapp_path
+	end
+end
+
 desc 'Database migration'
 task :migrate => :environment do
 	require 'dm-migrations/migration_runner'
 	require 'db/migrate/migration_helper'
 	require 'models'
 	DataMapper.auto_migrate!
-	#p Dir['db/migrate/*.rb']
-	# require 'db/migrate/migration_helper'
-	# version = nil
-	# ActiveRecord::Migrator.migrate('db/migrate', version)
+	Dir['db/migrate/*.rb'].each do |migration|
+		load migration
+	end
 	custom_path = File.expand_path '../../coyoho-private/db/migrate'
 	if File.directory? custom_path
 		Dir[custom_path + '/*.rb'].each do |migration|
@@ -56,7 +72,7 @@ desc 'Execute RSpec tests'
 task :spec => :environment do
 	require 'rspec/core/rake_task'
 	RSpec::Core::RakeTask.new(:spec) do |task|
-		task.rspec_opts = '-I ../net.grappendorf.rubydin.ruby/lib -I app -I config' 
+		task.rspec_opts = '-I ../net.grappendorf.rubydin.ruby/lib -I app -I config'
 		task.verbose = true
 	end
 end
@@ -68,14 +84,14 @@ task :createmigration do
 	filename = File.expand_path "db/migrate/#{stamp}_#{name}.rb"
 	content = <<-EOS
 	migration #{stamp}, :#{name} do
-	
+
 		up do
 		end
-		
+
 		down do
 		end
-		
-	end 
+
+	end
 	EOS
 	File.open(filename, 'w') {|f| f.write content.gsub(/^\t/, '')}
 end

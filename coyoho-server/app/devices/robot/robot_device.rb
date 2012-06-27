@@ -26,8 +26,8 @@ class RobotDevice < Device
 	include DeviceConnectionState
 	include XbeeDevice
 
-	def icon
-		@icon ||= Rubydin::ThemeResource.new 'icons/32/cat.png'
+	def self.icon
+		@@icon ||= Rubydin::ThemeResource.new 'icons/32/cat.png'
 	end
 
 	def message_received message
