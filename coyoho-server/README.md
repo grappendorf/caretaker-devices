@@ -75,6 +75,7 @@ to /etc/environment.
 
 Now we can build the CoYoHo web application, create a new empty database and deploy it to Jetty:
 
+	bundle install
 	rake widgetset
 	rake createdb
 	rake deploy
