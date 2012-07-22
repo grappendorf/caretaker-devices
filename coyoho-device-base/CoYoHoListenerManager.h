@@ -72,13 +72,22 @@ template<int MAX_LISTENERS> class ListenerManager
 
 	void removeListener(XBeeAddress64 address)
 	{
-		for (uint8_t i = 0; i < MAX_LISTENERS; ++i)
+		uint8_t i = 0;
+		for (; i < MAX_LISTENERS; ++i)
 		{
 			if (address.getMsb() == listener[i].getMsb() && address.getLsb() == listener[i].getLsb())
 			{
 				listener[i] = XBeeAddress64(0, 0);
+				listenerLeaseTimeout[i] = 0;
 				break;
 			}
+		}
+		if (i != MAX_LISTENERS)
+		{
+			uint8_t message[] =
+			{	COYOHO_MESSAGE_RESPONSE | COYOHO_REMOVE_LISTENER};
+			ZBTxRequest txRequest(address, message, sizeof(message));
+			xbee->send(txRequest);
 		}
 	}
 
@@ -113,6 +122,23 @@ template<int MAX_LISTENERS> class ListenerManager
 	const XBeeAddress64* listenerAddresses()
 	{
 		return listener;
+	}
+
+	bool processXBeeMessage(uint8_t command, XBee &xbee, ZBRxResponse rxResponse)
+	{
+		switch(command)
+		{
+			case COYOHO_ADD_LISTENER:
+				addListener(rxResponse.getRemoteAddress64());
+				return true;
+
+			case COYOHO_REMOVE_LISTENER:
+				removeListener(rxResponse.getRemoteAddress64());
+				return true;
+
+			default:
+				return false;
+		}
 	}
 
 	private:
