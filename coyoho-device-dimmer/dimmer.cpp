@@ -27,6 +27,7 @@
 #include <XXBee/XXBee.h>
 #include <CoYoHoMessages.h>
 #include <CoYoHoListenerManager.h>
+#include <avr/wdt.h>
 
 /** Digital I/O pin numbers */
 const int PIN_LED = 8;
@@ -108,7 +109,7 @@ ListenerManager<4> listenerManager(& xbee);
  */
 void notifyListeners()
 {
-	uint8_t message[] = { COYOHO_SWITCH_READ | COYOHO_MESSAGE_NOTIFY, 0, brightness };
+	uint8_t message[] = { COYOHO_PWM_READ | COYOHO_MESSAGE_NOTIFY, 0, brightness };
 	listenerManager.notifyListeners(message, sizeof(message));
 }
 
@@ -237,6 +238,7 @@ void setup()
 	configureINT0();
 	configureTimer1();
 	xbee.begin(XBEE_BAUD_RATE);
+	wdt_enable(WDTO_2S);
 }
 
 /**
@@ -244,6 +246,7 @@ void setup()
  */
 void loop()
 {
+	wdt_reset();
 	calmDownLED();
 	listenerManager.checkListenerLeases();
 
@@ -280,21 +283,21 @@ void loop()
 			blinkLED();
 			xbee.getResponse().getZBRxResponse(rxResponse);
 			xbee.resetData(rxResponse.getData(), rxResponse.getDataLength());
-			if (xbee.dataAvailable(1))
+			while (xbee.dataAvailable())
 			{
 				uint8_t command = xbee.getData();
+
+				if (listenerManager.processXBeeMessage(command, xbee, rxResponse))
+				{
+					continue;
+				}
+
 				switch (command)
 				{
-					case COYOHO_ADD_LISTENER:
-						listenerManager.addListener(rxResponse.getRemoteAddress64());
-						break;
-
-					case COYOHO_REMOVE_LISTENER:
-						listenerManager.removeListener(rxResponse.getRemoteAddress64());
-						break;
-
 					case COYOHO_RESET:
-						setBrightness(0);
+						for (;;)
+						{
+						}
 						break;
 
 					case COYOHO_PWM_WRITE:
