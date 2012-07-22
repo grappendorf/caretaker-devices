@@ -21,6 +21,7 @@
 #include <XXBee/XXBee.h>
 #include <CoYoHoMessages.h>
 #include <CoYoHoListenerManager.h>
+#include <avr/wdt.h>
 
 /** IO pin numbers */
 const uint8_t PIN_LED_RED = 5;
@@ -99,18 +100,18 @@ void processXBeeMessages()
 			while (xbee.dataAvailable())
 			{
 				uint8_t command = xbee.getData();
+
+				if (listenerManager.processXBeeMessage(command, xbee, rxResponse))
+				{
+					continue;
+				}
+
 				switch (command)
 				{
-					case COYOHO_ADD_LISTENER:
-						listenerManager.addListener(rxResponse.getRemoteAddress64());
-						break;
-
-					case COYOHO_REMOVE_LISTENER:
-						listenerManager.removeListener(rxResponse.getRemoteAddress64());
-						break;
-
 					case COYOHO_RESET:
-						rgb(0, 0, 0);
+						for (;;)
+						{
+						}
 						break;
 
 					case COYOHO_RGB_WRITE:
@@ -192,20 +193,6 @@ void processXBeeMessages()
 }
 
 /**
- * Main system loop.
- */
-void loop()
-{
-	listenerManager.checkListenerLeases();
-	processXBeeMessages();
-	button.update();
-	if (button.fallingEdge())
-	{
-		toggle();
-	}
-}
-
-/**
  * Main system setup.
  */
 void setup()
@@ -216,4 +203,20 @@ void setup()
 	pinMode(PIN_BUTTON, INPUT);
 	digitalWrite(PIN_BUTTON, HIGH);
 	xbee.begin(XBEE_BAUD_RATE);
+	wdt_enable(WDTO_2S);
+}
+
+/**
+ * Main system loop.
+ */
+void loop()
+{
+	wdt_reset();
+	listenerManager.checkListenerLeases();
+	processXBeeMessages();
+	button.update();
+	if (button.fallingEdge())
+	{
+		toggle();
+	}
 }
