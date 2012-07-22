@@ -22,11 +22,15 @@
 #include <DallasTemperature/DallasTemperature.h>
 #include <CoYoHoMessages.h>
 #include <CoYoHoListenerManager.h>
+#include <avr/wdt.h>
 
 /** Digital I/O pin numbers */
 const int PIN_STATUS_LED = 13;
 const int PIN_AZIMUTH_SERVO = 9;
 const int PIN_ALTITUDE_SERVO = 10;
+const int PIN_ONE_WIRE = 3;
+
+/** Analog I/O pin numbers */
 const int PIN_BRIGHTNESS = 0;
 
 /** Status led durations */
@@ -42,14 +46,15 @@ const long XBEE_BAUD_RATE = 57600;
 /** Azimuth servo min, max, default values */
 const int azimuthDefault = 90;
 const int azimuthDelta = 5;
-const int azimuthMin = 30;
-const int azimuthMax = 150;
+const int azimuthMin = 20;
+const int azimuthMax = 160;
+const int azimuthRangeReductionFactor = 3;
 
 /** Altitude servo min, max, default values */
 const int altitudeDefault = 90;
-const int altitudeDelta = 5;
-const int altitudeMin = 56;
-const int altitudeMax = 116;
+const int altitudeDelta = 2;
+const int altitudeMin = 70;
+const int altitudeMax = 110;
 
 /** When to turn of the staus LED */
 unsigned long statusLedOffMillis = 0;
@@ -64,10 +69,10 @@ Servo azimuthServo;
 Servo altitudeServo;
 
 /** One wire device */
-OneWire oneWire (2);
+OneWire oneWire(PIN_ONE_WIRE);
 
 /** Temperatue sensor */
-DallasTemperature temperature (&oneWire);
+DallasTemperature temperature(&oneWire);
 
 /** Next temperature request time in milli seconds */
 unsigned long nextTeperatureRequestMillis = 0;
@@ -79,29 +84,29 @@ XXBee<32> xbee;
 ZBRxResponse rxResponse;
 
 /** Device state listeners */
-ListenerManager<4> listenerManager(& xbee);
+ListenerManager<4> listenerManager(&xbee);
 
 /**
  * Flash the status light.
  */
-void blinkStatusLight ()
+void blinkStatusLight()
 {
-	if (millis () > statusLedNextMillis)
+	if (millis() > statusLedNextMillis)
 	{
-		statusLedOffMillis = millis () + STATUS_LED_BLINK_DURATION;
+		statusLedOffMillis = millis() + STATUS_LED_BLINK_DURATION;
 		statusLedNextMillis = statusLedOffMillis + STATUS_LED_BLINK_DELAY;
-		digitalWrite (PIN_STATUS_LED, HIGH);
+		digitalWrite(PIN_STATUS_LED, HIGH);
 	}
 }
 
 /**
  * Switch the status LED off if the blink duration elapsed.
  */
-void calmDownStatusLight ()
+void calmDownStatusLight()
 {
-	if (millis () > statusLedOffMillis)
+	if (millis() > statusLedOffMillis)
 	{
-		digitalWrite (PIN_STATUS_LED, LOW);
+		digitalWrite(PIN_STATUS_LED, LOW);
 	}
 }
 
@@ -116,10 +121,9 @@ void calmDownStatusLight ()
  * @param defaultVal Default servo value
  * @param defaultDelta Default increment/decrement value
  */
-void setServo (Servo *servo, int mode, int val, int min, int max,
-		int defaultVal, int defaultDelta)
+void setServo(Servo *servo, int mode, int val, int min, int max, int defaultVal, int defaultDelta)
 {
-	int pos = servo->read ();
+	int pos = servo->read();
 	switch (mode)
 	{
 		case COYOHO_WRITE_ABSOLUTE:
@@ -141,34 +145,39 @@ void setServo (Servo *servo, int mode, int val, int min, int max,
 			pos -= defaultDelta;
 			break;
 	}
-	servo->write (constrain (pos, min, max));
+	servo->write(constrain (pos, min, max));
 }
 
 /**
  * Perform a servo write command.
  */
-void cmdServoWrite ()
+void cmdServoWrite()
 {
-	while (xbee.dataAvailable (2))
+	while (xbee.dataAvailable(2))
 	{
-		int servo = xbee.getData ();
-		int mode = xbee.getData ();
+		int servo = xbee.getData();
+		int mode = xbee.getData();
 		int val = 0;
-		if ((mode == COYOHO_WRITE_ABSOLUTE || mode
-				== COYOHO_WRITE_INCREMENT || mode
-				== COYOHO_WRITE_DECREMENT) && xbee.dataAvailable ())
+
+		if ((mode == COYOHO_WRITE_ABSOLUTE || mode == COYOHO_WRITE_INCREMENT || mode == COYOHO_WRITE_DECREMENT)
+				&& xbee.dataAvailable())
 		{
-			val = xbee.getData ();
+			val = xbee.getData();
 		}
-		if (servo == COYOHO_SERVO_AZIMUTH || servo == COYOHO_SERVO_ALL)
-		{
-			setServo (&azimuthServo, mode, val, azimuthMin, azimuthMax,
-					azimuthDefault, azimuthDelta);
-		}
+
 		if (servo == COYOHO_SERVO_ALTITUDE || servo == COYOHO_SERVO_ALL)
 		{
-			setServo (&altitudeServo, mode, val, altitudeMin, altitudeMax,
-					altitudeDefault, altitudeDelta);
+			setServo(&altitudeServo, mode, val, altitudeMin, altitudeMax, altitudeDefault, altitudeDelta);
+		}
+
+		int rangeReduction = abs(altitudeServo.read() - altitudeDefault) * azimuthRangeReductionFactor;
+		int min = azimuthMin + rangeReduction;
+		int max = azimuthMax - rangeReduction;
+		azimuthServo.write(constrain (azimuthServo.read(), min, max));
+
+		if (servo == COYOHO_SERVO_AZIMUTH || servo == COYOHO_SERVO_ALL)
+		{
+			setServo(&azimuthServo, mode, val, min, max, azimuthDefault, azimuthDelta);
 		}
 	}
 }
@@ -176,175 +185,174 @@ void cmdServoWrite ()
 /**
  * Perform a servo read command.
  */
-void cmdServoRead ()
+void cmdServoRead()
 {
-	xbee.resetPayload ();
-	xbee.putPayload (COYOHO_SERVO_READ | COYOHO_MESSAGE_RESPONSE);
+	xbee.resetPayload();
+	xbee.putPayload(COYOHO_SERVO_READ | COYOHO_MESSAGE_RESPONSE);
 	bool azimuthServoWritten = false;
 	bool altitudeServoWritten = false;
-	while (xbee.dataAvailable ())
+	while (xbee.dataAvailable())
 	{
-		uint8_t servoNum = xbee.getData ();
-		if ((servoNum == COYOHO_SERVO_AZIMUTH || servoNum == COYOHO_SERVO_ALL)
-				&& !azimuthServoWritten)
+		uint8_t servoNum = xbee.getData();
+		if ((servoNum == COYOHO_SERVO_AZIMUTH || servoNum == COYOHO_SERVO_ALL) && !azimuthServoWritten)
 		{
-			xbee.putPayload (COYOHO_SERVO_AZIMUTH);
-			xbee.putPayload (azimuthServo.read ());
+			xbee.putPayload(COYOHO_SERVO_AZIMUTH);
+			xbee.putPayload(azimuthServo.read());
 			azimuthServoWritten = true;
 		}
-		else if ((servoNum == COYOHO_SERVO_ALTITUDE || servoNum
-				== COYOHO_SERVO_ALL) && !altitudeServoWritten)
+		else if ((servoNum == COYOHO_SERVO_ALTITUDE || servoNum == COYOHO_SERVO_ALL) && !altitudeServoWritten)
 		{
-			xbee.putPayload (COYOHO_SERVO_ALTITUDE);
-			xbee.putPayload (altitudeServo.read ());
+			xbee.putPayload(COYOHO_SERVO_ALTITUDE);
+			xbee.putPayload(altitudeServo.read());
 			altitudeServoWritten = true;
 		}
 	}
-	ZBTxRequest txRequest (rxResponse.getRemoteAddress64 (), xbee.payload (),
-			xbee.payloadLenght ());
-	xbee.send (txRequest);
+	ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(), xbee.payloadLenght());
+	xbee.send(txRequest);
 }
 
 /**
  * Perform a sensor read command.
  */
-void cmdSensorRead ()
+void cmdSensorRead()
 {
-	xbee.resetPayload ();
-	xbee.putPayload (COYOHO_SENSOR_READ | COYOHO_MESSAGE_RESPONSE);
+	xbee.resetPayload();
+	xbee.putPayload(COYOHO_SENSOR_READ | COYOHO_MESSAGE_RESPONSE);
 	bool temperatureWritten = false;
 	bool brightnessWritten = false;
 	bool azimuthServoWritten = false;
 	bool altitudeServoWritten = false;
-	while (xbee.dataAvailable ())
+	while (xbee.dataAvailable())
 	{
-		uint8_t sensorType = xbee.getData ();
+		uint8_t sensorType = xbee.getData();
 		uint8_t sensorNum = COYOHO_SENSOR_ALL;
 		if (sensorType != COYOHO_SENSOR_ALL)
 		{
-			if (!xbee.dataAvailable ())
+			if (!xbee.dataAvailable())
 			{
 				continue;
 			}
-			sensorNum = xbee.getData ();
+			sensorNum = xbee.getData();
 		}
-		if ((sensorType == COYOHO_SENSOR_TEMPERATURE || sensorType
-				== COYOHO_SENSOR_ALL) && !temperatureWritten)
+		if ((sensorType == COYOHO_SENSOR_TEMPERATURE || sensorType == COYOHO_SENSOR_ALL) && !temperatureWritten)
 		{
-			uint16_t val = temperature.getTempCByIndex (0) * 100;
-			xbee.putPayload (COYOHO_SENSOR_TEMPERATURE);
-			xbee.putPayload (0);
-			xbee.putPayload ((val >> 8) & 0xff);
-			xbee.putPayload (val & 0xff);
+			uint16_t val = temperature.getTempCByIndex(0) * 100;
+			xbee.putPayload(COYOHO_SENSOR_TEMPERATURE);
+			xbee.putPayload(0);
+			xbee.putPayload((val >> 8) & 0xff);
+			xbee.putPayload(val & 0xff);
 			temperatureWritten = true;
 		}
-		if ((sensorType == COYOHO_SENSOR_BRIGHTNESS || sensorType
-				== COYOHO_SENSOR_ALL) && !brightnessWritten)
+		if ((sensorType == COYOHO_SENSOR_BRIGHTNESS || sensorType == COYOHO_SENSOR_ALL) && !brightnessWritten)
 		{
-			uint16_t val = 1023 - analogRead (PIN_BRIGHTNESS);
-			xbee.putPayload (COYOHO_SENSOR_BRIGHTNESS);
-			xbee.putPayload (0);
-			xbee.putPayload ((val >> 8) & 0xff);
-			xbee.putPayload (val & 0xff);
+			uint16_t val = 1023 - analogRead(PIN_BRIGHTNESS);
+			xbee.putPayload(COYOHO_SENSOR_BRIGHTNESS);
+			xbee.putPayload(0);
+			xbee.putPayload((val >> 8) & 0xff);
+			xbee.putPayload(val & 0xff);
 			brightnessWritten = true;
 		}
-		if ((sensorType == COYOHO_SENSOR_SERVO || sensorType
-				== COYOHO_SENSOR_ALL) && (sensorNum == COYOHO_SERVO_AZIMUTH
-				|| sensorNum == COYOHO_SERVO_ALL) && !azimuthServoWritten)
+		if ((sensorType == COYOHO_SENSOR_SERVO || sensorType == COYOHO_SENSOR_ALL)
+				&& (sensorNum == COYOHO_SERVO_AZIMUTH || sensorNum == COYOHO_SERVO_ALL) && !azimuthServoWritten)
 		{
-			xbee.putPayload (COYOHO_SENSOR_SERVO);
-			xbee.putPayload (COYOHO_SERVO_AZIMUTH);
-			xbee.putPayload (180 - azimuthServo.read ());
+			xbee.putPayload(COYOHO_SENSOR_SERVO);
+			xbee.putPayload(COYOHO_SERVO_AZIMUTH);
+			xbee.putPayload(180 - azimuthServo.read());
 			azimuthServoWritten = true;
 		}
-		if ((sensorType == COYOHO_SENSOR_SERVO || sensorType
-				== COYOHO_SENSOR_ALL) && (sensorNum == COYOHO_SERVO_ALTITUDE
-				|| sensorNum == COYOHO_SERVO_ALL) && !altitudeServoWritten)
+		if ((sensorType == COYOHO_SENSOR_SERVO || sensorType == COYOHO_SENSOR_ALL)
+				&& (sensorNum == COYOHO_SERVO_ALTITUDE || sensorNum == COYOHO_SERVO_ALL) && !altitudeServoWritten)
 		{
-			xbee.putPayload (COYOHO_SENSOR_SERVO);
-			xbee.putPayload (COYOHO_SERVO_ALTITUDE);
-			xbee.putPayload (altitudeServo.read ());
+			xbee.putPayload(COYOHO_SENSOR_SERVO);
+			xbee.putPayload(COYOHO_SERVO_ALTITUDE);
+			xbee.putPayload(altitudeServo.read());
 			altitudeServoWritten = true;
 		}
 	}
-	ZBTxRequest txRequest (rxResponse.getRemoteAddress64 (), xbee.payload (),
-			xbee.payloadLenght ());
-	xbee.send (txRequest);
+	ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(), xbee.payloadLenght());
+	xbee.send(txRequest);
 }
 
 /**
  * System setup.
  */
-void setup ()
+void setup()
 {
-	pinMode (PIN_STATUS_LED, OUTPUT);
-	azimuthServo.attach (PIN_AZIMUTH_SERVO);
-	altitudeServo.attach (PIN_ALTITUDE_SERVO);
-	azimuthServo.write (azimuthDefault);
-	altitudeServo.write (altitudeDefault);
-	temperature.begin ();
-	xbee.begin (XBEE_BAUD_RATE);
+	pinMode(PIN_STATUS_LED, OUTPUT);
+	azimuthServo.attach(PIN_AZIMUTH_SERVO);
+	altitudeServo.attach(PIN_ALTITUDE_SERVO);
+	azimuthServo.write(azimuthDefault);
+	altitudeServo.write(altitudeDefault);
+	temperature.begin();
+	xbee.begin(XBEE_BAUD_RATE);
+	blinkStatusLight();
+	wdt_enable(WDTO_2S);
 }
 
 /**
  * Main execution loop.
  */
-void loop ()
+void loop()
 {
-	calmDownStatusLight ();
+	wdt_reset();
+	calmDownStatusLight();
 	listenerManager.checkListenerLeases();
 
-	xbee.readPacket ();
-	if (xbee.getResponse ().isAvailable ())
+	xbee.readPacket();
+	if (xbee.getResponse().isAvailable())
 	{
-		if (xbee.getResponse ().getApiId () == ZB_RX_RESPONSE)
+		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE)
 		{
-			blinkStatusLight ();
-			xbee.getResponse ().getZBRxResponse (rxResponse);
-			xbee.resetData (rxResponse.getData (), rxResponse.getDataLength ());
-			if (xbee.dataAvailable ())
+			xbee.getResponse().getZBRxResponse(rxResponse);
+			xbee.resetData(rxResponse.getData(), rxResponse.getDataLength());
+			if (xbee.dataAvailable())
 			{
-				uint8_t command = xbee.getData ();
-				switch (command)
+				uint8_t command = xbee.getData();
+
+				if (listenerManager.processXBeeMessage(command, xbee, rxResponse))
 				{
-					case COYOHO_ADD_LISTENER:
-						listenerManager.addListener(rxResponse.getRemoteAddress64());
-						break;
+					blinkStatusLight();
+				}
+				else
+				{
+					switch (command)
+					{
+						case COYOHO_RESET:
+							for (;;)
+							{
+							}
+							break;
 
-					case COYOHO_REMOVE_LISTENER:
-						listenerManager.removeListener(rxResponse.getRemoteAddress64());
-						break;
+						case COYOHO_SENSOR_READ:
+							blinkStatusLight();
+							cmdSensorRead();
+							break;
 
-					case COYOHO_RESET:
-						azimuthServo.write (azimuthDefault);
-						altitudeServo.write (altitudeDefault);
-						break;
+						case COYOHO_SERVO_WRITE:
+							blinkStatusLight();
+							cmdServoWrite();
+							break;
 
-					case COYOHO_SENSOR_READ:
-						cmdSensorRead ();
-						break;
+						case COYOHO_SERVO_READ:
+							blinkStatusLight();
+							cmdServoRead();
+							break;
 
-					case COYOHO_SERVO_WRITE:
-						cmdServoWrite ();
-						break;
-
-					case COYOHO_SERVO_READ:
-						cmdServoRead ();
-						break;
-
-					case COYOHO_DUMP:
-						xbee.resetPayload();
-						xbee.putPayload(COYOHO_DUMP | COYOHO_MESSAGE_RESPONSE);
-						xbee.putPayload(COYOHO_DUMP_VERSION);
-						xbee.putPayload(COYOHO_VERSION);
-						break;
+						case COYOHO_DUMP:
+							blinkStatusLight();
+							xbee.resetPayload();
+							xbee.putPayload(COYOHO_DUMP | COYOHO_MESSAGE_RESPONSE);
+							xbee.putPayload(COYOHO_DUMP_VERSION);
+							xbee.putPayload(COYOHO_VERSION);
+							break;
+					}
 				}
 			}
 		}
 	}
-	if (millis () > nextTeperatureRequestMillis)
+	if (millis() > nextTeperatureRequestMillis)
 	{
-		temperature.requestTemperatures ();
-		nextTeperatureRequestMillis = millis () + TEMPERATURE_REQUEST_INTERVAL;
+		temperature.requestTemperatures();
+		nextTeperatureRequestMillis = millis() + TEMPERATURE_REQUEST_INTERVAL;
 	}
 }
