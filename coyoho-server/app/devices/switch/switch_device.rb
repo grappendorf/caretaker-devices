@@ -19,11 +19,12 @@ limitations under the License.
 =end
 
 require 'devices/device'
+require 'devices/connection_state/xbee_connection_state'
 require 'devices/xbee_device'
 
 class SwitchDevice < Device
 	
-	include DeviceConnectionState
+	handle_connection_state_with XBeeConnectionState
 	include XbeeDevice
 	
 	property :num_switches, Integer

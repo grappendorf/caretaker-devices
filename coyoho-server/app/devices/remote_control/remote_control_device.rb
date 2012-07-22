@@ -19,11 +19,12 @@ limitations under the License.
 =end
 
 require 'devices/device'
+require 'devices/connection_state/dummy_connection_state'
 require 'devices/xbee_device'
 
 class RemoteControlDevice < Device
 
-	include DeviceConnectionState
+	handle_connection_state_with DummyConnectionState
 	include XbeeDevice
 
 	property :num_buttons, Integer

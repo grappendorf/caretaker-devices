@@ -123,12 +123,23 @@ GIT
     dm-validations (1.3.0.beta)
       dm-core (~> 1.3.0.beta)
 
+GIT
+  remote: https://github.com/intridea/grape
+  revision: 20b53219195f25360747d701afcadcff94a4b730
+  specs:
+    grape (0.2.1)
+      hashie (~> 1.2)
+      multi_json
+      multi_xml
+      rack
+      rack-mount
+
 GEM
   remote: http://rubygems.org/
   specs:
-    actionpack (3.2.5)
-      activemodel (= 3.2.5)
-      activesupport (= 3.2.5)
+    actionpack (3.2.6)
+      activemodel (= 3.2.6)
+      activesupport (= 3.2.6)
       builder (~> 3.0.0)
       erubis (~> 2.7.0)
       journey (~> 1.0.1)
@@ -136,10 +147,10 @@ GEM
       rack-cache (~> 1.2)
       rack-test (~> 0.6.1)
       sprockets (~> 2.1.3)
-    activemodel (3.2.5)
-      activesupport (= 3.2.5)
+    activemodel (3.2.6)
+      activesupport (= 3.2.6)
       builder (~> 3.0.0)
-    activesupport (3.2.5)
+    activesupport (3.2.6)
       i18n (~> 0.6)
       multi_json (~> 1.0)
     addressable (2.2.8)
@@ -162,11 +173,12 @@ GEM
       jdbc-sqlite3 (>= 3.5.8)
     erubis (2.7.0)
     fastercsv (1.5.5)
+    hashie (1.2.0)
     hike (1.2.1)
     i18n (0.6.0)
     jdbc-postgres (9.1.901)
     jdbc-sqlite3 (3.7.2)
-    journey (1.0.3)
+    journey (1.0.4)
     jruby-openssl (0.7.6.1)
       bouncy-castle-java (>= 1.5.0146.1)
     json (1.7.3-java)
@@ -175,16 +187,19 @@ GEM
       little-plugger (>= 1.1.3)
     micon (0.1.28)
     multi_json (1.3.6)
+    multi_xml (0.5.1)
     rack (1.4.1)
     rack-cache (1.2)
       rack (>= 0.4)
+    rack-mount (0.8.3)
+      rack (>= 1.0.0)
     rack-ssl (1.3.2)
       rack
     rack-test (0.6.1)
       rack (>= 1.0)
-    railties (3.2.5)
-      actionpack (= 3.2.5)
-      activesupport (= 3.2.5)
+    railties (3.2.6)
+      actionpack (= 3.2.6)
+      activesupport (= 3.2.6)
       rack-ssl (~> 1.3.2)
       rake (>= 0.8.7)
       rdoc (~> 3.4)
@@ -192,6 +207,7 @@ GEM
     rake (0.9.2.2)
     rdoc (3.12)
       json (~> 1.4)
+    renum (1.3.1)
     rspec (2.10.0)
       rspec-core (~> 2.10.0)
       rspec-expectations (~> 2.10.0)
@@ -200,6 +216,8 @@ GEM
     rspec-expectations (2.10.0)
       diff-lcs (~> 1.1.3)
     rspec-mocks (2.10.1)
+    ruby-debug-ide (0.4.16)
+      rake (>= 0.8.1)
     rubydin (6.8.0.1)
     rubydin-addons-codemirror (2.2.4.1)
       rubydin (~> 6.8.0.1)
@@ -218,6 +236,8 @@ GEM
     rubydin-optional-di (6.8.0.1)
       micon (~> 0.1.28)
       rubydin (~> 6.8.0.1)
+    rubydin-optional-standalone (6.8.0.1)
+      rubydin (~> 6.8.0.1)
     rufus-scheduler (2.0.16)
       tzinfo (>= 0.3.23)
     sprockets (2.1.3)
@@ -226,12 +246,12 @@ GEM
       tilt (~> 1.1, != 1.3.0)
     statemachine (2.0.1)
     stringex (1.3.3)
-    thor (0.15.2)
+    thor (0.15.4)
     thread_storm (0.7.1)
     tilt (1.3.3)
     tzinfo (0.3.33)
     uuidtools (2.1.2)
-    virtus (0.5.0)
+    virtus (0.5.1)
       backports (~> 2.6.1)
 
 PLATFORMS
@@ -254,11 +274,14 @@ DEPENDENCIES
   dm-transactions (= 1.3.0.beta)!
   dm-types (= 1.3.0.beta)!
   dm-validations (= 1.3.0.beta)!
-  jruby-openssl (= 0.7.6.1)
-  logging (= 1.7.2)
-  micon (= 0.1.28)
-  rake (= 0.9.2.2)
-  rspec (= 2.10.0)
+  grape (~> 0.2.1)!
+  jruby-openssl (~> 0.7.6.1)
+  logging (~> 1.7.2)
+  micon (~> 0.1.28)
+  rake (>= 0.9.2.2)
+  renum (~> 1.3.1)
+  rspec (>= 2.10.0)
+  ruby-debug-ide (>= 0.4.16)
   rubydin (~> 6.8.0.1)
   rubydin-addons-codemirror (~> 2.2.4.1)
   rubydin-addons-colorpicker (~> 1.1.0.1)
@@ -268,7 +291,8 @@ DEPENDENCIES
   rubydin-addons-wizardsforvaadin (~> 0.4.4.1)
   rubydin-optional-datamapper (~> 6.8.0.1)
   rubydin-optional-di (~> 6.8.0.1)
-  rufus-scheduler (= 2.0.16)
-  statemachine (= 2.0.1)
-  thread_storm (= 0.7.1)
+  rubydin-optional-standalone (~> 6.8.0.1)
+  rufus-scheduler (~> 2.0.16)
+  statemachine (~> 2.0.1)
+  thread_storm (~> 0.7.1)
   virtus (~> 0.5)

@@ -54,8 +54,7 @@ class NewDeviceWizard < Rubydin::Wizard
 			@table.column_header :description, 'Description'
 			@table.column_expand_ratio :description, 1.0			
 			@table.selectable = true
-			@types = ObjectSpace.enum_for(:each_object, class << Device; self; end).to_a
-			@types.delete Device
+			@types = ObjectSpace.each_object(Class).select {|klass| klass < Device}
 			@types.sort{|a,b| a.name <=> b.name}
 			@types.each_with_index do |type, i| 
 				@table.add_item i, Rubydin::Embedded.new(type.icon), type.name, ''

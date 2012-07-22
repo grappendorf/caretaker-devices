@@ -26,4 +26,16 @@ class String
 		raise ArgumentError.new "invalid value for Boolean: '#{self}'"
 	end
 	
+	def is_binary_data?
+		(self.count( "^ -~", "^\r\n" ).fdiv(self.size) > 0.3 || self.index( "\x00" )) unless empty?
+	end
+
+	def to_underscore!
+		self.gsub!(/(.)([A-Z])/,'\1_\2').downcase!
+	end
+   
+	def to_underscore
+		self.clone.to_underscore!
+	end
+	
 end

@@ -1,6 +1,9 @@
 @import url(../chameleon-dark/styles.css);
-tr.v-table-row-odd {
+.v-table-row-odd {
 	background-color: #28272D;
+}
+.v-table-row {
+	background-color: #2D2D2D;
 }
 .v-form {
 	margin-bottom: 1em;

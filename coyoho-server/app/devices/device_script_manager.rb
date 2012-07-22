@@ -18,6 +18,8 @@ limitations under the License.
 
 =end
 
+require 'devices/device_script'
+
 # Device script are stored in the database and should define two functions: start() and and 
 # stop(). When the system starts up, all enabled scripts are loaded, evaluated and their start()
 # function is called. If a script is modified, its stop() function is called, it is 

@@ -19,11 +19,12 @@ limitations under the License.
 =end
 
 require 'devices/device'
+require 'devices/connection_state/xbee_connection_state'
 require 'devices/xbee_device'
 
 class DimmerRgbDevice < Device
 
-	include DeviceConnectionState
+	handle_connection_state_with XBeeConnectionState
 	include XbeeDevice
 
 	def self.icon
@@ -70,6 +71,10 @@ class DimmerRgbDevice < Device
 			@rgb = [message[2], message[3], message[4]] 
 			notify_change_listeners
 		end	
+	end
+
+	def update
+		send_message COYOHO_RGB_READ, 0
 	end
 
 end

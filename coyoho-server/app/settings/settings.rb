@@ -22,8 +22,6 @@ require 'yaml'
 
 class Settings
 
-	inject :logger
-
 	SETTINGS_FILE_NAME = $CONFIG['settings_file']
 
 	enum :BaudRate do

@@ -18,8 +18,6 @@ limitations under the License.
 
 =end
 
-require 'devices/device'
-require 'devices/device_connection_state'
 require 'devices/camera/camera_device'
 require 'devices/dimmer/dimmer_device'
 require 'devices/dimmer/dimmer_rgb_device'
@@ -87,13 +85,23 @@ class DeviceManager
 		if device.address
 			@devices_by_address[device.address] = device
 		end
-		device.start_device_connection_state
+		device.start
 	end
 	
 	def create_device device
 		if device.save
 			add_device
 		end
+	end
+	
+	def update_device device
+		if device.save
+			idx = @devices.index{|d| d.id == device.id}
+			@devices[idx].stop
+			@devices[idx] = device
+			@devices_by_address[device.address] = device
+			device.start 
+		end 
 	end
 	
 	def delete_device device_id

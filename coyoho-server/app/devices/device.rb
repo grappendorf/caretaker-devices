@@ -18,7 +18,7 @@ limitations under the License.
 
 =end
 
-require 'devices/device_connection_state'
+require 'devices/connection_state/connection_state'
 
 class Device
 	
@@ -31,6 +31,16 @@ class Device
 	property :created_at, DateTime
 	property :updated_at, DateTime	
 
+	def self.handle_connection_state_with connection_state_handler
+		include connection_state_handler
+	end 
+	
+	def self.create_base_only from_other_device
+		d = Device.new
+		Device.properties.each{|p| d.send(p.name.to_s + '=', from_other_device.send(p.name))}
+		d
+	end
+	
 	def self.icon
 		@@icon ||= Rubydin::ThemeResource.new 'icons/32/joystick.png'
 	end
@@ -54,4 +64,26 @@ class Device
 		attributes.each{|a| attribute_get a[0]}
 		p attributes
 	end
+	
+	# We define to_xml to always return a root tag with the name of the Device base class,
+	# instead of the name of the specific device subclass.
+	def to_xml
+		class_name = self.class.to_s.to_underscore
+		xml = super
+		'<device>' + xml[(class_name.length + 2)..(-class_name.length - 4)] + '</device>'
+	end
+	
+	def start
+		start_device_connection_state		
+	end
+	
+	def stop
+		disconnect	
+	end
+	
+	def reset
+		disconnect
+		connect
+	end
+	
 end

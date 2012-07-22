@@ -18,14 +18,15 @@ limitations under the License.
 
 =end
 
+require 'devices/device'
+require 'devices/connection_state/dummy_connection_state'
+require 'util/executor'
 require 'net/http'
 require 'uri'
-require 'devices/device'
-require 'util/executor'
 
 class IpCameraDevice < Device
 
-	include NullDeviceConnectionState
+	handle_connection_state_with DummyConnectionState
 	include Executor
 
 	property :host, String, length:255

@@ -30,9 +30,10 @@ class XbeeMaster
 
 	register_as :xbee
 
-	inject :settings, :logger
+	inject :settings
 
 	def initialize
+		@logger = Logging.logger[XbeeMaster]
 		@xbee = XBee.new
 		@message_listeners = []
 		@xbee_mutex = Mutex.new
@@ -43,7 +44,7 @@ class XbeeMaster
 			@xbee.open settings.serial_device, settings.baud_rate.rate
 			@xbee.add_packet_listener self
 		rescue
-			logger.error "Unable to open serial device '#{settings.serial_device}'"
+			@logger.error "Unable to open serial device '#{settings.serial_device}'"
 		end
 	end
 

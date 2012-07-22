@@ -1,0 +1,8 @@
+gui_port: 8080
+api_port: 9080
+
+settings_file: /tmp/coyoho-settings.yml
+
+logger:
+  DeviceConnectionState:
+    level: :info

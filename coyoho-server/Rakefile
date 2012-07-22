@@ -1,5 +1,6 @@
 $: << 'app'
 $: << 'config'
+$: << 'lib'
 
 require 'rubygems'
 require 'bundler/setup'
@@ -8,15 +9,21 @@ require 'rake/clean'
 require 'yaml'
 require 'logger'
 
-environment_name = 'development'
+def load_yaml file_name
+	yaml = File.read file_name
+	yaml = yaml.gsub(/(?:<%=)(.+?)(?:%>)/) {eval($1)}
+	YAML::load(yaml)
+end
+
+environment_name = ENV['environment'] || 'development'
 
 CLOBBER.include 'build/*'
 
 task :environment do
 	require 'data_mapper'
-	dbconfig = YAML::load(File.open('config/database.yml'))
-	DataMapper::Logger.new($stdout, :debug)
-	DataMapper.setup(:default, dbconfig[environment_name])
+	dbconfig = load_yaml 'config/database.yml'
+	DataMapper::Logger.new $stdout, :debug
+	DataMapper.setup :default, dbconfig[environment_name]
 end
 
 desc 'Create the widgetset.gwt.xml file and compile the widgetset'
@@ -27,24 +34,30 @@ task :widgetset do
 	Rubydin::Widgetset.compile
 end
 
-desc 'Deploy the web application'
-task :deploy do
-	jetty_home = ENV['JETTY_HOME']
-	if not jetty_home
-		raise 'No JETTY_HOME defined. Please install Jetty'
-	end
-	webapp_path = File.expand_path 'webapps/coyoho', jetty_home
-	FileUtils.mkdir_p webapp_path
+desc 'Create a web application package'
+task :package do
+	FileUtils.mkdir_p 'build/webapp'	
 	[
 		'app', 'config', 
 		'public/META-INF', 'public/WEB-INF', 'public/VAADIN',
 		'build/VAADIN',	'Gemfile', 'Gemfile.lock'
 	].each do |src|
-		FileUtils.cp_r src, webapp_path
+		FileUtils.cp_r src, 'build/webapp'
 	end
+	system 'cd build/webapp; zip -r ../coyoho.war *; cd ..'
 end
 
-desc 'Database migration'
+desc 'Deploy the web application'
+task :deploy => :package do
+	jetty_home = ENV['JETTY_HOME']
+	if not jetty_home
+		raise 'No JETTY_HOME defined. Please install Jetty'
+	end
+	webapp_path = File.expand_path 'webapps/coyoho', jetty_home
+	FileUtils.cp_r 'build/webapp', webapp_path
+end
+
+desc 'Database migration (optional migrate=<optional_migration_path>)'
 task :migrate => :environment do
 	require 'dm-migrations/migration_runner'
 	require 'db/migrate/migration_helper'
@@ -53,10 +66,13 @@ task :migrate => :environment do
 	Dir['db/migrate/*.rb'].each do |migration|
 		load migration
 	end
-	custom_path = File.expand_path '../../coyoho-private/db/migrate'
-	if File.directory? custom_path
-		Dir[custom_path + '/*.rb'].each do |migration|
-			load migration
+	additional_migration = ENV['migrate']
+	if additional_migration
+		additional_migration_path = File.expand_path 'db/migrate', additional_migration
+		if File.directory? additional_migration_path
+			Dir[additional_migration_path + '/*.rb'].each do |migration|
+				load migration
+			end
 		end
 	end
 	migrate_up!
@@ -94,4 +110,9 @@ task :createmigration do
 	end
 	EOS
 	File.open(filename, 'w') {|f| f.write content.gsub(/^\t/, '')}
+end
+
+desc 'Start the CoYoHo server'
+task :start do
+	load 'boot.rb'
 end

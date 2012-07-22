@@ -27,11 +27,16 @@ module XbeeDevice
 	inject :xbee
 	
 	def address_to_a
-		address.scan(/../).map &:hex
+		address.scan(/../).map(&:hex)
 	end
 	
 	def send_message *data
 		xbee.send_message address_to_a, *data
+	end
+	
+	def reset
+		super
+		send_message COYOHO_RESET		
 	end
 	
 end

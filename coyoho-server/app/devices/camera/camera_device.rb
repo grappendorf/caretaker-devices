@@ -19,11 +19,12 @@ limitations under the License.
 =end
 
 require 'devices/device'
+require 'devices/connection_state/xbee_connection_state'
 require 'devices/xbee_device'
 
 class CameraDevice < Device
 	
-	include DeviceConnectionState
+	handle_connection_state_with XBeeConnectionState
 	include XbeeDevice
 
 	property :host, String, length:255

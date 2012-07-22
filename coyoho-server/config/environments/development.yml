@@ -1,4 +1,7 @@
-settings_file: /tmp/coyoho-settings.yml
+gui_port: 8080
+api_port: 9080
+
+settings_file: <%= ENV['HOME'] %>/coyoho-settings.yml
 
 auto_login:
   username: admin
@@ -9,5 +12,5 @@ auto_login:
   # password: user
 
 logger:
-  DeviceConnectionState:
+  XBeeConnectionState:
     level: :info

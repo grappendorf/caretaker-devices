@@ -8,7 +8,7 @@
 
 development:
   adapter: sqlite
-  database: /tmp/coyoho.db
+  database: <%= ENV['HOME'] %>/coyoho.db
 
 test:
   adapter: sqlite
