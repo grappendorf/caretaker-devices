@@ -20,24 +20,24 @@
 #include <XXBee/XXBee.h>
 #include <CoYoHoMessages.h>
 #include <CoYoHoListenerManager.h>
+#include <avr/wdt.h>
 
 /** Digital I/O pin numbers */
-const uint8_t PIN_SWITCH1 = 8;
-const uint8_t PIN_SWITCH2 = 6;
-const uint8_t PIN_SWITCH3 = 4;
-const uint8_t PIN_SWITCH4 = 2;
-const uint8_t PIN_SWITCH5 = 9;
-const uint8_t PIN_SWITCH6 = 7;
-const uint8_t PIN_SWITCH7 = 5;
-const uint8_t PIN_SWITCH8 = 3;
-
-/** Analog pin numbers */
-
-const uint8_t PIN_CURRENT_SENSE = 0;
+const uint8_t PIN_SWITCH0 = 8;
+const uint8_t PIN_SWITCH1 = 6;
+const uint8_t PIN_SWITCH2 = 4;
+const uint8_t PIN_SWITCH3 = 2;
+const uint8_t PIN_SWITCH4 = 9;
+const uint8_t PIN_SWITCH5 = 7;
+const uint8_t PIN_SWITCH6 = 5;
+const uint8_t PIN_SWITCH7 = 3;
+const uint8_t PIN_BUZZER = 15;
 
 /** Switch pins by number */
-const uint8_t switchPins[] =
-{ PIN_SWITCH1, PIN_SWITCH2, PIN_SWITCH3, PIN_SWITCH4, PIN_SWITCH5, PIN_SWITCH6, PIN_SWITCH7, PIN_SWITCH8 };
+const uint8_t switchPins[] = { PIN_SWITCH0, PIN_SWITCH1, PIN_SWITCH2, PIN_SWITCH3, PIN_SWITCH4, PIN_SWITCH5,
+		PIN_SWITCH6, PIN_SWITCH7 };
+
+/** Total number of switch pins */
 const uint8_t NUM_SWITCH_PINS = sizeof switchPins / sizeof switchPins[0];
 
 /** ZigBee baud rate */
@@ -49,57 +49,57 @@ XXBee<8> xbee;
 /** ZigBee reusable RX response message */
 ZBRxResponse rxResponse;
 
-/** Current power consumption in W */
-uint16_t powerConsumption = 0;
-
-/** Next time to update the sensor values */
-unsigned long nextSenseUpdateMillis = 0;
-
-/** Current sensor value maximum */
-uint16_t currentSenseMax = 0;
-
 /** Device state listeners */
-ListenerManager<4> listenerManager(& xbee);
+ListenerManager<4> listenerManager(&xbee);
+
+/** Beep duration in milli seconds */
+const int BEEP_DURATION_SHORT = 100;
+
+/** Beep duration in milli seconds */
+const int BEEP_DURATION_LONG = 500;
+
+/** When to switch off the buzzer (milli second timestamp) */
+unsigned long beepCalmDownTime = 0;
 
 /**
- * System setup.
+ * Beep the buzzer.
+ *
+ * @param duration Beep duration in milli seconds
  */
-void setup()
+void beep(int duration = BEEP_DURATION_SHORT)
 {
-	for (uint8_t i = 0; i < 8; ++i)
+	digitalWrite(PIN_BUZZER, HIGH);
+	beepCalmDownTime = millis() + duration;
+	if (beepCalmDownTime == 0)
 	{
-		pinMode(switchPins[i], OUTPUT);
+		beepCalmDownTime = 1;
 	}
-	xbee.begin(XBEE_BAUD_RATE);
 }
 
+/**
+ * Eventually switch of the buzzer (if it's currently beeping and the
+ * beep duration has elapsed.
+ */
+void calmDownBeep()
+{
+	if (beepCalmDownTime != 0 && millis() > beepCalmDownTime)
+	{
+		digitalWrite(PIN_BUZZER, LOW);
+		beepCalmDownTime = 0;
+	}
+}
+
+/**
+ * Notify all listeners about a state change of the specified switch.
+ *
+ * @param changedSwitchNum The number of the changed switch
+ */
 void notifyListeners(uint8_t changedSwitchNum)
 {
 	uint8_t switchPin = switchPins[changedSwitchNum];
 	uint8_t message[] = { COYOHO_SWITCH_READ | COYOHO_MESSAGE_NOTIFY, changedSwitchNum,
 			digitalRead(switchPin) == HIGH ? 1 : 0 };
 	listenerManager.notifyListeners(message, sizeof(message));
-}
-
-/**
- * Read the sensor values.
- */
-void readSensors()
-{
-	unsigned long nowMillis = millis();
-	if (nowMillis > nextSenseUpdateMillis)
-	{
-		nextSenseUpdateMillis += 1000;
-		powerConsumption = currentSenseMax;
-		currentSenseMax = 0;
-	}
-
-	uint16_t currentSense = analogRead(PIN_CURRENT_SENSE);
-	currentSense = currentSense > 512 ? currentSense - 512 : 512 - currentSense;
-	if (currentSense > currentSenseMax)
-	{
-		currentSenseMax = currentSense;
-	}
 }
 
 /**
@@ -117,21 +117,17 @@ void processXBeeMessages()
 			while (xbee.dataAvailable())
 			{
 				uint8_t command = xbee.getData();
+
+				if (listenerManager.processXBeeMessage(command, xbee, rxResponse))
+				{
+					continue;
+				}
+
 				switch (command)
 				{
-					case COYOHO_ADD_LISTENER:
-						listenerManager.addListener(rxResponse.getRemoteAddress64());
-						break;
-
-					case COYOHO_REMOVE_LISTENER:
-						listenerManager.removeListener(rxResponse.getRemoteAddress64());
-						break;
-
 					case COYOHO_RESET:
-						for (uint8_t i = 0; i <= 7; ++i)
+						for (;;)
 						{
-							digitalWrite(switchPins[i], LOW);
-							notifyListeners(i);
 						}
 						break;
 
@@ -180,6 +176,7 @@ void processXBeeMessages()
 										break;
 								}
 								notifyListeners(switchNum);
+								beep();
 							}
 						}
 						break;
@@ -198,23 +195,6 @@ void processXBeeMessages()
 						}
 						break;
 
-					case COYOHO_SENSOR_READ:
-						if (xbee.dataAvailable(1))
-						{
-							if (xbee.getData() == COYOHO_SENSOR_POWER_CONSUMPTION)
-							{
-								xbee.resetPayload();
-								xbee.putPayload(COYOHO_SENSOR_READ | COYOHO_MESSAGE_RESPONSE);
-								xbee.putPayload(COYOHO_SENSOR_POWER_CONSUMPTION);
-								xbee.putPayload(powerConsumption >> 8);
-								xbee.putPayload(powerConsumption & 0xff);
-								ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
-										xbee.payloadLenght());
-								xbee.send(txRequest);
-							}
-						}
-						break;
-
 					case COYOHO_DUMP:
 						xbee.resetPayload();
 						xbee.putPayload(COYOHO_DUMP | COYOHO_MESSAGE_RESPONSE);
@@ -228,11 +208,27 @@ void processXBeeMessages()
 }
 
 /**
+ * System setup.
+ */
+void setup()
+{
+	for (uint8_t i = 0; i < 8; ++i)
+	{
+		pinMode(switchPins[i], OUTPUT);
+	}
+	xbee.begin(XBEE_BAUD_RATE);
+	pinMode(PIN_BUZZER, OUTPUT);
+	beep(BEEP_DURATION_LONG);
+	wdt_enable(WDTO_2S);
+}
+
+/**
  * Main execution loop.
  */
 void loop()
 {
+	wdt_reset();
+	calmDownBeep();
 	listenerManager.checkListenerLeases();
-	readSensors();
 	processXBeeMessages();
 }
