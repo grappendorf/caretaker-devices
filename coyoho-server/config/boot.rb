@@ -30,6 +30,7 @@ require 'logger'
 require 'logging'
 require 'yaml'
 require 'data_mapper'
+require 'util/oo_helpers'
 
 def load_yaml path
 	yaml = File.read path	

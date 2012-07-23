@@ -22,6 +22,7 @@ class XbeeMaster
 
 	java_import com.rapplogic.xbee.api.PacketListener
 	java_import com.rapplogic.xbee.api.XBee
+	java_import com.rapplogic.xbee.api.XBeeConfiguration
 	java_import com.rapplogic.xbee.api.XBeeAddress64
 	java_import com.rapplogic.xbee.api.zigbee.ZNetTxRequest
 	java_import com.rapplogic.xbee.api.ApiId
@@ -34,7 +35,10 @@ class XbeeMaster
 
 	def initialize
 		@logger = Logging.logger[XbeeMaster]
-		@xbee = XBee.new
+		xbee_conf = XBeeConfiguration.new
+		# Startup checks fail on the panda board with no reason
+		xbee_conf.with_startup_checks false 
+		@xbee = XBee.new xbee_conf
 		@message_listeners = []
 		@xbee_mutex = Mutex.new
 	end
@@ -43,8 +47,8 @@ class XbeeMaster
 		begin
 			@xbee.open settings.serial_device, settings.baud_rate.rate
 			@xbee.add_packet_listener self
-		rescue
-			@logger.error "Unable to open serial device '#{settings.serial_device}'"
+		rescue Exception => x
+			@logger.error "Unable to open serial device '#{settings.serial_device}': #{x.message}"
 		end
 	end
 
