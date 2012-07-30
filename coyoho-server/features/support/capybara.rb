@@ -4,5 +4,5 @@ require 'capybara/cucumber'
 require 'selenium-webdriver'
 
 Capybara.default_driver = :selenium
-Capybara.app_host = 'http://localhost:8080/coyoho'
+Capybara.app_host = 'http://localhost:8080'
 World(Capybara)

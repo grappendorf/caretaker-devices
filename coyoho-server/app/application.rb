@@ -32,14 +32,12 @@ class CoYoHoApplication < Rubydin::Application
 	inject :settings_view
 	inject :sysinfo_view
 	inject :device_script_view
-	inject :device_view
+	inject :devices_view
 
 	attr_reader :views
 
 	def init
 		super
-
-		when_transaction_start {|application,request| Thread.current[':rubydin_session_id'] = request.session.id}
 
 		@push = Rubydin::ServerPush.new
 
@@ -50,7 +48,7 @@ class CoYoHoApplication < Rubydin::Application
 			settings_view,
 			sysinfo_view, 
 			device_script_view, 
-			device_view
+			devices_view
 		]
 
 		set_theme 'coyoho'
@@ -89,10 +87,6 @@ class CoYoHoApplication < Rubydin::Application
 
 	def push
 		@push.push
-	end
-
-	def foo
-		puts 'Foo!'
 	end
 
 end

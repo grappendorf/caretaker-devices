@@ -21,7 +21,7 @@ limitations under the License.
 class EditDeviceDialog < Rubydin::Window
 	
 	def initialize device
-		super 'Edit device "' + device.name + '"' 
+		super T('view.devices.edit_device_with_name', device:device.name) 
 		self.width = '50%'
 		self.height = '50%'
 		self.center
@@ -44,13 +44,13 @@ class EditDeviceDialog < Rubydin::Window
 		panel.margin = true
 		panel.add spacer = Rubydin::HorizontalSpacer.new
 		panel.expand spacer, 1.0
-		save_button = Rubydin::Button.new 'Save', Rubydin::ThemeResource.new('icons/16/ok.png')
+		save_button = Rubydin::Button.new T('save'), Rubydin::ThemeResource.new('icons/16/ok.png')
 		save_button.when_clicked do |e|
 			form.commit
 			@save_handler.call e if @save_handler
 		end 
 		panel.add save_button		
-		cancel_button = Rubydin::Button.new 'Cancel', Rubydin::ThemeResource.new('icons/16/cancel.png')
+		cancel_button = Rubydin::Button.new T('cancel'), Rubydin::ThemeResource.new('icons/16/cancel.png')
 		cancel_button.when_clicked {|e| @cancel_handler.call e if @cancel_handler} 
 		panel.add cancel_button 
 	end

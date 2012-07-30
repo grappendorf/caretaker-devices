@@ -1,3 +1,5 @@
+asserts: true
+
 gui_port: 8080
 api_port: 9080
 

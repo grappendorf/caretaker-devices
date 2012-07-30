@@ -20,40 +20,56 @@ limitations under the License.
 
 require 'devices/device_script'
 
-# Device script are stored in the database and should define two functions: start() and and 
+# Device script are stored in the database and should define two functions: start() and and
 # stop(). When the system starts up, all enabled scripts are loaded, evaluated and their start()
-# function is called. If a script is modified, its stop() function is called, it is 
+# function is called. If a script is modified, its stop() function is called, it is
 # re-evaluated and then its start() method is called again.
- 
+
 class DeviceScriptManager
-	
+
 	register_as :device_script_manager
 
-	def initialize 
+	def initialize
 		@logger = Logging.logger[DeviceScriptManager]
+		@scripts_by_id = {}
 	end
-	
+
 	def start
 		@logger.info 'Device Script Manager starting'
 		DeviceScript.all.each do |script|
 			if script.enabled?
-				@logger.info "Starting script #{script.name}"
-				script_class_name = "DeviceScript#{script.name.capitalize}"
-				code = <<-CODE
-					class #{script_class_name}
-						#{script.script}
-					end
-					script = #{script_class_name}.new
-					script.init
-				CODE
-				begin
-					eval code
-				rescue Exception => x
-					@logger.error 'Error: ' + x.message
-				end		
+				instantiate_script_class script
 			end
 		end
-
 	end
-	
+
+	def update_script script	
+		if script.save
+			script_instance = @scripts_by_id[script.id]
+			script_instance.stop
+			if script.enabled?
+				instantiate_script_class script
+			end
+			true
+		else
+			false
+		end
+	end
+
+	def instantiate_script_class script
+		script_class_name = "DeviceScript#{script.name}"
+		code = <<-CODE
+			class #{script_class_name}
+				#{script.script}
+			end
+			#{script_class_name}.new
+		CODE
+		begin
+			script_instance = eval code
+			@scripts_by_id[script.id] = script_instance
+			script_instance.start
+		rescue Exception => x
+			@logger.error %Q[#{x.message}\n\t#{x.backtrace.join "\n\t"}]
+		end
+	end
 end

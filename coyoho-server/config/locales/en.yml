@@ -1,0 +1,91 @@
+en:
+  domain:
+    attributes:
+      _:
+        created_at: Created at
+        updated_at: Updated at
+      CameraDevice:
+        name: Name
+        address: Address
+        host: IP-Address
+        port: Port
+        user: Username
+        password: Password
+        refresh_interval: Refresh Interval
+      IpCameraDevice:
+        name: Name
+        address: Address
+        host: IP-Address
+        port: Port
+        user: Username
+        password: Password
+        refresh_interval: Refresh Interval
+      DimmerDevice:
+        name: Name
+        address: Address
+      DimmerRgbDevice:
+        name: Name
+        address: Address
+      RemoteControlDevice:
+        name: Name
+        address: Address
+        num_buttons: Number of buttons
+        buttons_per_row: Buttons per row
+      RobotDevice:
+        name: Name
+        address: Address
+      SwitchDevice:
+        name: Name
+        address: Address
+        num_switches: Number of switches
+        switches_per_row: Switches per row
+      DeviceScript:
+        name: Name
+        description: Description
+        enabled: Enabled
+  view:
+    console:
+      name: Console
+      title: Console
+    dashboard:
+      name: Dashboard
+      title: Dashboard
+    devices:
+      name: Devices
+      title: Devices
+      new_device: New device
+      edit_device: Edit device
+      delete_device: Delete device
+      device: Device
+      control_panel: Control panel
+      create_new_device: Create new device
+      delete_confirm: Do you really want to delete the following device(s)?<br /><b>%{devices}</b>
+      edit_device_with_name: Edit device "%{device}" 
+    device_scripts:
+      name: Geräte-Programme
+      title: Geräte-Programme
+    help:
+      name: Help
+      title: Help
+    login:
+      title: CoYoHo - Anmeldung
+      name: Settings
+    settings:
+      title: Settings
+      name: System Info
+    system_info:
+      name: System Info
+      title: System Info
+  cancel: Cancel
+  create: Create
+  confirm_deletion: Confirm deletion
+  delete: Delete
+  discard: Discard
+  logged_in_as: Logged in as <b>%{name}</b> 
+  logout: Logout
+  'no': No
+  save: Save
+  terminate: Terminate
+  welcome_to_coyoho: Welcome to CoYoHo!
+  wrong_username_or_password: Wrong username or password
+  'yes': Yes

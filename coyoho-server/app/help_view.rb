@@ -25,7 +25,7 @@ class HelpView < View
 	register_as :help_view, scope: :session
 
 	def initialize
-		super 'Help', 'Help', 'icons/48/help.png', 6
+		super T('view.help.name'), T('view.help.title'), 'icons/48/help.png', 6
 	end
 
 end

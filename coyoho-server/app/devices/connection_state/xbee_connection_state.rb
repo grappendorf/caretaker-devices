@@ -127,7 +127,7 @@ module XBeeConnectionState
 	end
 
 	def state
-		return @connected ? State::CONNECTED : State::DISCONNECTED
+		return @connected ? ConnectionState::State::CONNECTED : ConnectionState::State::DISCONNECTED
 	end
 	
 	def connected?

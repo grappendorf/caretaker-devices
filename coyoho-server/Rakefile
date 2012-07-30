@@ -8,6 +8,7 @@ require 'rake'
 require 'rake/clean'
 require 'yaml'
 require 'logger'
+require 'util/string_helpers'
 
 def load_yaml file_name
 	yaml = File.read file_name
@@ -15,11 +16,20 @@ def load_yaml file_name
 	YAML::load(yaml)
 end
 
-environment_name = ENV['environment'] || 'development'
-
 CLOBBER.include 'build/*'
 
 task :environment do
+	environment_name = ENV['environment'] || ENV['COYOHO_ENV'] || 'development'
+
+	$CONFIG = {}
+	config_yml = File.dirname(File.expand_path(__FILE__)) + "/config/environments/#{environment_name}.yml"
+	begin
+		$CONFIG = load_yaml config_yml
+	rescue Exception => x
+		puts "Unable to load configuration file '#{config_yml}' : #{x.message}"
+	end
+
+	require 'util/oo_helpers'
 	require 'data_mapper'
 	dbconfig = load_yaml 'config/database.yml'
 	DataMapper::Logger.new $stdout, :debug

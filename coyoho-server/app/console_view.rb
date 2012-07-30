@@ -27,7 +27,7 @@ class ConsoleView < View
 	secure :view, [:admin]
 
 	def initialize
-		super 'Console', 'Console', 'icons/48/console.png', 6
+		super T('view.console.name'), T('view.console.title'), 'icons/48/console.png', 6
 	end
 
 	class ConsoleHandler < Rubydin::Console::Handler

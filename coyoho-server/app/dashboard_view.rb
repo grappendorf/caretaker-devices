@@ -25,7 +25,7 @@ class DashboardView < View
 	register_as :dashboard_view, scope: :session
 
 	def initialize
-		super 'Dashboard', 'Dashboard', 'icons/48/view.png', 1
+		super T('view.dashboard.name'), T('view.dashboard.title'), 'icons/48/view.png', 1
 	end
 
 end

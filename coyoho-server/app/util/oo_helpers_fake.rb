@@ -18,29 +18,34 @@ limitations under the License.
 
 =end
 
-class String
+# Asserts
 
-	def to_b
-		return true if self == true || self =~ (/(true|t|yes|y|1|on)$/i)
-		return false if self == false || self.nil? || self =~ (/(false|f|no|n|0|off)$/i)
-		raise ArgumentError.new "invalid value for Boolean: '#{self}'"
-	end
+class Object
 
-	def is_binary_data?
-		(self.count( "^ -~", "^\r\n" ).fdiv(self.size) > 0.3 || self.index( "\x00" )) unless empty?
-	end
-
-	def to_underscore!
-		self.gsub!(/(.)([A-Z])/,'\1_\2').downcase!
-	end
-
-	def to_underscore
-		self.clone.to_underscore!
-	end
-
-	def strip_heredoc
-		indent = scan(/^[ \t]*(?=\S)/).min.try(:size) || 0
-		gsub(/^[ \t]{#{indent}}/, '')
+	def assert check, message = nil
 	end
 	
+end
+
+# Interfaces
+
+class Module
+
+	def interface
+	end
+
+	def abstract name
+	end
+
+	def implements interface_module
+		include interface_module
+	end
+
+end
+
+# Type safety
+
+class Object
+	def is_a type
+	end
 end

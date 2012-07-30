@@ -29,14 +29,16 @@ require 'devices/device_script'
 class DeviceScriptView < View
 
 	include Securable
+	
+	inject :device_script_manager
 
 	register_as :device_script_view, scope: :session
 
-	TABLE_COLUMNS = [:id, :enabled, :name, :description, :created_at, :updated_at, :actions]
+	TABLE_COLUMNS = [:enabled, :name, :description, :created_at, :updated_at, :actions]
 	FORM_FIELDS = [:enabled, :name, :description]
 
 	def initialize
-		super 'Device Scripts', 'Device Scripts', 'icons/48/execute.png', 3
+		super T('view.device_scripts.name'), T('view.device_scripts.title'), 'icons/48/execute.png', 3
 	end 
 
 	def create_content
@@ -45,7 +47,7 @@ class DeviceScriptView < View
 
 		gui = Rubydin::Builder.new
 		content = gui.VerticalLayout do
-			@table = gui.Table 'Device Scrtips', @items do |t|
+			@table = gui.Table '', @items do |t|
 				t.selectable = true
 				t.immediate = true
 				t.full_size
@@ -55,11 +57,11 @@ class DeviceScriptView < View
 				end
 				t.visible_columns TABLE_COLUMNS
 				t.column_expand_ratio :description, 1.0
-				t.column_header :enabled, 'Enabled'
-				t.column_header :name, 'Name'
-				t.column_header :description, 'Description'
-				t.column_header :created_at, 'Created at'
-				t.column_header :updated_at, 'Updated at'
+				t.column_header :enabled, T('domain.attributes.DeviceScript.enabled')
+				t.column_header :name, T('domain.attributes.DeviceScript.name')
+				t.column_header :description, T('domain.attributes.DeviceScript.description')
+				t.column_header :created_at, T('domain.attributes._.created_at')
+				t.column_header :updated_at, T('domain.attributes._.updated_at')
 				t.column_header :actions, ''
 				t.when_selection_changed {|e| edit e.property.value}
 			end
@@ -71,19 +73,19 @@ class DeviceScriptView < View
 			gui.HorizontalLayout do |h|
 				h.margin = true, false, false, false
 				h.spacing = true
-				gui.Button 'Save' do |b|
+				gui.Button T('save') do |b|
 					b.setIcon Rubydin::ThemeResource.new 'icons/16/ok.png'
 					b.when_clicked {save}
 				end
-				gui.Button 'Discard' do |b|
+				gui.Button T('discard') do |b|
 					b.setIcon Rubydin::ThemeResource.new 'icons/16/undo.png'
 					b.when_clicked {discard}
 				end
-				gui.Button 'Create' do |b|
+				gui.Button T('create') do |b|
 					b.setIcon Rubydin::ThemeResource.new 'icons/16/new.png'
 					b.when_clicked {create}
 				end
-				gui.Button 'Delete' do |b|
+				gui.Button T('delete') do |b|
 					b.setIcon Rubydin::ThemeResource.new 'icons/16/trashcan.png'
 					b.when_clicked {delete}
 				end
@@ -124,18 +126,16 @@ class DeviceScriptView < View
 	end
 
 	def save
-		@form.commit
-		data = @form.item_data_source.data
-		data.script = @script_editor.value
-		if data.save
+		if @form.commit!
+			data = @form.item_data_source.data
+			data.script = @script_editor.value
+			device_script_manager.update_script data 
+			@table.container_data_source = @items
+			@table.visible_columns TABLE_COLUMNS
+			@table.value = data.id
+			@form.focus
 			show_notification 'Device script saved'
-		else
-			show_notification 'Device script validation failed'
 		end
-		@table.container_data_source = @items
-		@table.visible_columns TABLE_COLUMNS
-		@table.value = data.id
-		@form.focus
 	end
 
 	def discard

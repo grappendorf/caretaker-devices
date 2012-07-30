@@ -29,7 +29,7 @@ class SettingsView < View
 	inject :settings
 
 	def initialize
-		super 'Settings', 'Settings', 'icons/48/settings.png', 4
+		super T('view.settings.name'), T('view.settings.title'), 'icons/48/settings.png', 6
 	end
 
 	def create_content

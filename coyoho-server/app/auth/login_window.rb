@@ -32,11 +32,11 @@ class LoginWindow < Rubydin::Window
 	inject :settings
 
 	def init
-		self.caption = 'CoYoHo - Login'
+		self.caption = T('view.login.title')
 		self.content = Rubydin::VerticalLayout.new
 		self.content.full_size
 
-		panel = Rubydin::Panel.new 'Welcome to CoYoHo!'
+		panel = Rubydin::Panel.new T('welcome_to_coyoho')
 		self.content.add panel
 		self.content.align panel, Rubydin::Alignment::MIDDLE_CENTER
 
@@ -51,7 +51,7 @@ class LoginWindow < Rubydin::Window
 		elsif username == 'user' and password == settings.user_password
 			application.user = User.new 'user', 'user', [:user]
 		else
-			show_notification("Wrong username or password :-(");
+			show_notification T('wrong_username_or_password')
 		end
 	end
 end

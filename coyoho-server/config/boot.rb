@@ -30,7 +30,6 @@ require 'logger'
 require 'logging'
 require 'yaml'
 require 'data_mapper'
-require 'util/oo_helpers'
 
 def load_yaml path
 	yaml = File.read path	
@@ -46,7 +45,8 @@ end
 
 environment_name = ENV['COYOHO_ENV'] || 'development'
 
-Logging.appenders.stdout.layout = Logging.layouts.pattern pattern: '[%d] %-5l: (%c) %m\n' 
+Logging.appenders.stdout.layout = Logging.layouts.pattern pattern: '[%d] %-5l: (%c) %m\n', 
+	color_scheme:'default'
 Logging.logger.root.appenders = Logging.appenders.stdout
 Logging.logger.root.level = :info
 
@@ -79,6 +79,10 @@ require 'java/xbee-api-0.9.jar'
 require 'java/log4j-1.2.16.jar'
 require 'java/vaadin-chameleon-theme-1.0.2.jar'
 require 'java/chameleon-dark.jar'
+require 'rufus/scheduler'
+require 'thread_storm'
+require 'rack'
+require 'i18n'
 require 'util/oo_helpers'
 require 'util/dm_rest_adapter_helpers'
 require 'util/string_helpers'
@@ -88,9 +92,6 @@ require 'rubydin'
 require 'rubydin-optional-di'
 require 'rubydin-optional-datamapper'
 require 'rubydin_addons'
-require 'rufus/scheduler'
-require 'thread_storm'
-require 'rack'
 require 'auth/securable'
 require 'auth/login_window'
 require 'settings/settings'
@@ -102,10 +103,12 @@ require 'help_view'
 require 'settings/settings_view'
 require 'devices/device_manager'
 require 'devices/device_script_manager'
-require 'devices/device_view'
+require 'devices/devices_view'
 require 'devices/device_script_view'
 require 'application'
 require 'rubydin-optional-standalone/server'
+
+I18n.load_path << Dir['config/locales/*.{rb,yml}']
 
 def exit
 	Java::java.lang.System.exit 0

@@ -19,6 +19,7 @@ limitations under the License.
 =end
 
 require 'ui/view'
+require 'image_proxy_uri_handler'
 
 class MainWindow < Rubydin::Window
 
@@ -47,8 +48,8 @@ class MainWindow < Rubydin::Window
 		content_box.expand @content_panel, 1.0
 		@content_panel.full_size
 
-		footer = Rubydin::Label.new(((application != nil and application.user != nil) ? 'Logged in as <b>' +
-		application.user.name + '</b>' : '') +
+		footer = Rubydin::Label.new(
+		((application != nil and application.user != nil) ? T('logged_in_as', name:application.user.name) : '') +
 		'&nbsp;'*4 + 'CoYoHo - Control Your Home' +
 		'&nbsp;'*4 + '(C)2012 Dirk Grappendorf' +
 		'&nbsp;'*4 + '<a href="www.grappendorf.net">www.grappendorf.net</a>',
@@ -56,6 +57,10 @@ class MainWindow < Rubydin::Window
 		content_box.add footer
 
 		activate_view dashboard_view
+		
+		image_proxy_handler = ImageProxyUriHandler.new
+		add_uri_handler image_proxy_handler
+		add_parameter_handler image_proxy_handler
 	end
 
 	def create_navigation_bar
@@ -73,14 +78,14 @@ class MainWindow < Rubydin::Window
 			button.when_clicked { activate_view v }
 		end
 
-		button_logout = Rubydin::Button.new 'Logout'
+		button_logout = Rubydin::Button.new T('logout')
 		navigation_bar.add button_logout
 		button_logout.width = '100%'
 		button_logout.icon = Rubydin::ThemeResource.new 'icons/48/exit.png'
 		button_logout.when_clicked { application.user = nil }
 
 		if application.user.roles.include? :admin
-			button_terminate = Rubydin::Button.new 'Terminate'
+			button_terminate = Rubydin::Button.new T('terminate')
 			navigation_bar.add button_terminate
 			button_terminate.width = '100%'
 			button_terminate.icon = Rubydin::ThemeResource.new 'icons/48/bomb.png'

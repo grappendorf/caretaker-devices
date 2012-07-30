@@ -24,6 +24,7 @@ require 'devices/dimmer/dimmer_controller'
 require 'devices/dimmer/dimmer_rgb_controller'
 require 'devices/camera/ip_camera_controller'
 require 'devices/remote_control/remote_control_controller'
+require 'devices/easyvr/easyvr_controller'
 require 'devices/robot/robot_controller'
 require 'devices/switch/switch_controller'
 require 'devices/new_device_wizard'
@@ -33,7 +34,7 @@ class DeviceView < View
 
 	include Securable
 
-	register_as :device_view, scope: :session
+	register_as :devices_view, scope: :session
 
 	inject :device_manager
 
@@ -42,7 +43,7 @@ class DeviceView < View
 	CONNECTION_CONNECTED_ICON = Rubydin::ThemeResource.new 'icons/16/connect-established.png'
 
 	def initialize
-		super 'Devices', 'Devices', 'icons/48/processor.png', 2
+		super T('view.devices.name'), T('view.devices.title'), 'icons/48/processor.png', 2
 	end
 
 	def create_content
@@ -50,15 +51,15 @@ class DeviceView < View
 		gui.VerticalLayout do
 			gui.HorizontalLayout do |h|
 				h.margin = false, false, true, false
-				gui.Button 'New Device' do |b|
+				gui.Button T('view.devices.new_device') do |b|
 					b.icon = Rubydin::ThemeResource.new 'icons/16/new.png'
 					b.when_clicked {new_device}
 				end
-				gui.Button 'Edit Device' do |b|
+				gui.Button T('view.devices.edit_device') do |b|
 					b.icon = Rubydin::ThemeResource.new 'icons/16/configure.png'
 					b.when_clicked {edit_device}
 				end
-				gui.Button 'Delete Device' do |b|
+				gui.Button T('view.devices.delete_device') do |b|
 					b.icon = Rubydin::ThemeResource.new 'icons/16/trashcan.png'
 					b.when_clicked {delete_device}
 				end
@@ -71,9 +72,9 @@ class DeviceView < View
 				t.container_property :connection, Rubydin::Component
 				t.container_property :controller, Rubydin::Component
 				t.column_header :check, ''
-				t.column_header :device, 'Device'
+				t.column_header :device, T('view.devices.device')
 				t.column_header :connection, ''
-				t.column_header :controller, 'Control Panel'
+				t.column_header :controller, T('view.devices.control_panel')
 				t.column_expand_ratio :controller, 1.0
 				t.when_item_clicked {|e| exclusively_select_item e.item_id}
 
@@ -141,15 +142,15 @@ class DeviceView < View
 	end
 	
 	def new_device
-		window = Rubydin::Window.new 'Create new device'
+		window = Rubydin::Window.new T('view.devices.create_new_device')
 		window.width = '50%'
 		window.height = '50%'
 		window.center
 		wizard = NewDeviceWizard.new
 		wizard.when_completed do
-#			device_manager.create_device wizard.device
-#			add_device_table_item wizard.device
-#			application.main_window.remove_window window
+			device_manager.create_device wizard.device
+			add_device_table_item wizard.device
+			application.main_window.remove_window window
 		end
 		wizard.when_cancelled {application.main_window.remove_window window}
 		window.content = wizard
@@ -162,13 +163,12 @@ class DeviceView < View
 			return
 		end
 		device_names = ids.map{|id| Device.first(id:id, fields:[:name]).name}.join '<br />'
-		Rubydin::ConfirmDialog::show window, 'Confirm deletion',
-			"Do you really want to delete the following device(s)?<br /><b>#{device_names}</b>",
-			'Yes', 'No' do |dialog|
+		Rubydin::ConfirmDialog::show window, T('confirm_deletion'),
+			T('view.devices.delete_confirm', devices:device_names), T('yes'), T('no') do |dialog|
 				if dialog.confirmed?
 					ids.each do |id|
-#						device_manager.delete_device id
-#						delete_device_table_item id
+						device_manager.delete_device id
+						delete_device_table_item id
 					end
 				end
 		end

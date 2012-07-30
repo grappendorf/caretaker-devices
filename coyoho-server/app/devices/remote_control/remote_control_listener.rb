@@ -18,29 +18,12 @@ limitations under the License.
 
 =end
 
-class String
-
-	def to_b
-		return true if self == true || self =~ (/(true|t|yes|y|1|on)$/i)
-		return false if self == false || self.nil? || self =~ (/(false|f|no|n|0|off)$/i)
-		raise ArgumentError.new "invalid value for Boolean: '#{self}'"
-	end
-
-	def is_binary_data?
-		(self.count( "^ -~", "^\r\n" ).fdiv(self.size) > 0.3 || self.index( "\x00" )) unless empty?
-	end
-
-	def to_underscore!
-		self.gsub!(/(.)([A-Z])/,'\1_\2').downcase!
-	end
-
-	def to_underscore
-		self.clone.to_underscore!
-	end
-
-	def strip_heredoc
-		indent = scan(/^[ \t]*(?=\S)/).min.try(:size) || 0
-		gsub(/^[ \t]{#{indent}}/, '')
-	end
+module RemoteControlListener
+	
+	interface
+	
+	abstract :button_pressed
+	
+	abstract :button_released
 	
 end

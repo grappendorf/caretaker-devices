@@ -19,13 +19,13 @@ limitations under the License.
 =end
 
 require 'devices/device'
-require 'devices/connection_state/dummy_connection_state'
+require 'devices/connection_state/xbee_connection_state'
 require 'devices/xbee_device'
-require 'devices/remote_control/remote_control_listener'
+require 'devices/easyvr/easyvr_listener'
 
-class RemoteControlDevice < Device
+class EasyvrDevice < Device
 
-	handle_connection_state_with DummyConnectionState
+	handle_connection_state_with XBeeConnectionState
 	include XbeeDevice
 
 	property :num_buttons, Integer
@@ -70,13 +70,13 @@ class RemoteControlDevice < Device
 		end
 	end
 
-	def add_button_listener listener
-		assert listener.is_a RemoteControlListener
+	def add_easyvr_listener listener
+		assert listener.is_a EasyvrListener
 		button_listeners.push listener
 	end	
 
-	def remove_button_listener listener
-		assert listener.is_a RemoteControlListener
+	def remove_easyvr_listener listener
+		assert listener.is_a EasyvrListener
 		button_listeners.delete listener
 	end
 	

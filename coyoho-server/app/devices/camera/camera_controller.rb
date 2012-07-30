@@ -23,7 +23,8 @@ class CameraController < DeviceController
 	inject :scheduler
 
 	def initialize device
-		@image_url = "http://#{device.user}:#{device.password}@#{device.host}:#{device.port}/img/snapshot.cgi"
+		@image_url = "http://#{device.host}:#{device.port}/img/snapshot.cgi"
+		@image_handler_url = "/imageproxy?handler=imageproxy&url=#{@image_url}&user=#{device.user}&password=#{device.password}"
 		super
 	end
 
@@ -33,7 +34,7 @@ class CameraController < DeviceController
 		image_panel = Rubydin::HorizontalLayout.new
 		layout.add image_panel
 		image_panel.margin = false, true, false, false
-		@image = Rubydin::Embedded.new Rubydin::ExternalResource.new @image_url
+		@image = Rubydin::Embedded.new Rubydin::ExternalResource.new @image_handler_url
 		image_panel.add @image
 		@image.type = Rubydin::Embedded::TYPE_IMAGE
 		@image.width = '320px'

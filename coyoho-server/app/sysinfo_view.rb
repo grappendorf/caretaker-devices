@@ -25,7 +25,7 @@ class SysinfoView < View
 	register_as :sysinfo_view, scope: :session
 
 	def initialize
-		super 'System Info', 'System Info', 'icons/48/sysinfo.png', 5
+		super T('view.system_info.name'), T('view.system_info.title'), 'icons/48/sysinfo.png', 5
 	end
 
 end

@@ -23,7 +23,8 @@ class IpCameraController < DeviceController
 	inject :scheduler
 
 	def initialize device
-		@image_url = "http://#{device.user}:#{device.password}@#{device.host}:#{device.port}/snapshot.cgi"
+		@image_url = "http://#{device.host}:#{device.port}/snapshot.cgi"
+		@image_handler_url = "/imageproxy?handler=imageproxy&url=#{@image_url}&user=#{device.user}&password=#{device.password}"
 		super
 	end
 
@@ -33,7 +34,7 @@ class IpCameraController < DeviceController
 		image_panel = Rubydin::HorizontalLayout.new
 		layout.add image_panel
 		image_panel.margin = false, true, false, false
-		@image = Rubydin::Embedded.new Rubydin::ExternalResource.new @image_url
+		@image = Rubydin::Embedded.new Rubydin::ExternalResource.new @image_handler_url
 		image_panel.add @image
 		@image.type = Rubydin::Embedded::TYPE_IMAGE
 		@image.width = '320px'
@@ -73,10 +74,7 @@ class IpCameraController < DeviceController
 		button_reload = Rubydin::Button.new
 		button_reload.icon = Rubydin::ThemeResource.new 'icons/32/reload.png'
 		button_grid.add_at button_reload, 2, 0
-		button_reload.when_clicked do
-			@image.request_repaint
-			push
-		end
+		button_reload.when_clicked {request_repaint}
 
 		button00 = Rubydin::Button.new
 		button00.icon = Rubydin::ThemeResource.new 'icons/32/empty.png'
@@ -90,14 +88,18 @@ class IpCameraController < DeviceController
 		button22.icon = Rubydin::ThemeResource.new 'icons/32/empty.png'
 		button_grid.add_at button22, 2, 2
 
-		scheduler.every '1s' do
-			@image.request_repaint
-			push
+		scheduler.every "#{@device.refresh_interval}s" do
+			request_repaint
 		end
 
 		layout
 	end
 
+	def request_repaint
+		@image.request_repaint
+		push		
+	end
+	
 	def create_config_component
 		layout = Rubydin::GridLayout.new 2, 3
 		layout.spacing = true
