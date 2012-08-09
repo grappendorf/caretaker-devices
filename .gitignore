@@ -3,5 +3,5 @@ coyoho-android/bin/
 coyoho-android/gen/
 coyoho-server/coverage/
 coyoho-server/log/
-*/eagle/*.s#?
-*/eagle/*.b#?
+*/*.s#?
+*/*.b#?
