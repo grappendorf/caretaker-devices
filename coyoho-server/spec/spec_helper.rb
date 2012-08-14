@@ -70,7 +70,6 @@ RSpec.configure do |config|
 
 	config.before :each, :use => :database do
 		run_once do
-			p '1111'
 			dbconfig = load_yaml 'config/database.yml'
 			DataMapper::Logger.new $stdout, :error
 			DataMapper.setup :default, dbconfig[environment_name]
