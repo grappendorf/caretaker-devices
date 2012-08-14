@@ -12,7 +12,7 @@ development:
 
 test:
   adapter: sqlite
-  database: /tmp/coyoho-test.db
+  database: ':memory'
 
 production:
   adapter: sqlite

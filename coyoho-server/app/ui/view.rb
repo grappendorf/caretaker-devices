@@ -21,8 +21,8 @@ limitations under the License.
 class View
 		
 	attr_reader :name
-	attr_reader :title
-	attr_reader :image
+	attr_accessor :title
+	attr_accessor :image
 	attr_reader :position
 
 	def initialize(name, title, image, position)

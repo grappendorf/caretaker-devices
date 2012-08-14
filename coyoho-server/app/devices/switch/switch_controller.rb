@@ -18,6 +18,8 @@ limitations under the License.
 
 =end
 
+require 'devices/device_controller'
+
 class SwitchController < DeviceController
 
 	ICON_ON = Rubydin::ThemeResource.new 'icons/32/ledorange.png'

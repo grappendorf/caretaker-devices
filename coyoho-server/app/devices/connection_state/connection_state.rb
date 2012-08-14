@@ -40,9 +40,6 @@ module ConnectionState
 	# Call the specified block, when the device connection state has changed
 	abstract :when_connection_changed
 
-	# Start the device connection state management
-	abstract :start_device_connection_state
-
 	# Connect to the device
 	abstract :connect
 

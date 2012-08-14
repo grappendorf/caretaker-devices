@@ -18,16 +18,15 @@ limitations under the License.
 
 =end
 
-require 'devices/device_webservice'
+require 'devices/device'
 
-class DimmerWebService < DeviceWebService
+shared_examples_for Device do
 	
-	def get_value address
-		device(address).value
-	end
-	
-	def set_value address, value
-		device(address).value = value.to_i
+	it 'notifies listeners when the device state changes' do
+		expect do |block| 
+			@device.when_changed(&block)
+			@device.notify_change_listeners
+		end.to yield_with_args @device
 	end
 	
 end

@@ -71,7 +71,8 @@ de:
       title: CoYoHo - Anmeldung
     settings:
       name: Einstellungen
-      title: Einstellungen
+      title_user: Persönliche Einstellungen bearbeiten
+      title_admin: Systemeinstellungen und persönliche Einstellungen bearbeiten
     system_info:
       name: System Info
       title: System Informationen

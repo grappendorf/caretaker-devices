@@ -18,20 +18,17 @@ limitations under the License.
 
 =end
 
-require 'devices/device_webservice'
+require 'devices/connection_state/dummy_connection_state'
 
-class SwitchWebService < DeviceWebService
+describe DummyConnectionState do
 	
-	def get_state address, switch_num
-		device(address).on? switch_num.to_i
+	class DummyConnectionStateDevice
+		include DummyConnectionState
 	end
 	
-	def set_state address, switch_num, state
-		device(address).switch switch_num.to_i, state.to_b
-	end
-	
-	def toggle address, switch_num
-		device(address).toggle switch_num.to_i
+	it 'should always return the :UNKNOWN connection state' do
+		connection_state = DummyConnectionStateDevice.new
+		connection_state.state.should be ConnectionState::State::UNKNOWN
 	end
 	
 end

@@ -18,12 +18,8 @@ limitations under the License.
 
 =end
 
-class DeviceWebService
-	
-	inject :device_manager
-	
-	def device address
-		device_manager.device_by_address address	
-	end
-	
+if $CONFIG['asserts']
+	require 'util/assert_helpers_real'
+else
+	require 'util/assert_helpers_fake'
 end

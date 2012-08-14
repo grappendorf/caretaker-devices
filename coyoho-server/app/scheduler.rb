@@ -18,8 +18,6 @@ limitations under the License.
 
 =end
 
-if $CONFIG['asserts']
-	require 'util/oo_helpers_real'
-else
-	require 'util/oo_helpers_fake'
-end
+require 'rufus/scheduler'
+
+register(:scheduler) {Rufus::Scheduler.start_new}

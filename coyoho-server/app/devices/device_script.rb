@@ -18,9 +18,12 @@ limitations under the License.
 
 =end
 
+require 'data_mapper'
+require 'util/datamapper_helpers'
+
 class DeviceScript
 	
-	include DataMapper::Resource
+	include DomainObject
 
 	property :id, Serial
 	property :name, String, length:20, required:true, format: /^[A-Z]\w*$/, default:''

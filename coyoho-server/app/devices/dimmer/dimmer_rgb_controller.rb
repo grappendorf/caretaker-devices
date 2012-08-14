@@ -18,6 +18,8 @@ limitations under the License.
 
 =end
 
+require 'devices/device_controller'
+
 class DimmerRgbController < DeviceController
 
 	def create_control_component

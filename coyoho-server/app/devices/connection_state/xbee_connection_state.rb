@@ -20,12 +20,14 @@ limitations under the License.
 
 require 'devices/connection_state/connection_state'
 require 'statemachine'
+require 'scheduler'
 
 module XBeeConnectionState
 
 	implements ConnectionState
 
 	inject :scheduler
+	inject :random
 
 	REGISTER_FIRST_ATTEMPT_DELAY = 5
 	REGISTER_FIRST_ATTEMPT_DELAY_RANDOM = 5
@@ -34,7 +36,7 @@ module XBeeConnectionState
 	REGISTER_TIMEOUT = 5
 	REGISTER_LEASE = 5 * 60
 
-	def start_device_connection_state
+	def initialize
 		@logger = Logging.logger[XBeeConnectionState]
 		@connection_listeners = []
 		@connected = false
@@ -42,38 +44,62 @@ module XBeeConnectionState
 
 		@machine = Statemachine.build do
 			context device
-			state :UNCONNECTED do
+			state :DISCONNECTED do
 				event :connect, :WAIT_FOR_CONNECTION, :try_to_register
-				event :connect_response, :UNCONNECTED, proc {
+				event :connect_response, :DISCONNECTED, proc {
 					@logger.debug "Connect response from #{device.name} while in state UNCONNECTED"}
-				event :timeout, :UNCONNECTED, proc {
+				event :timeout, :DISCONNECTED, proc {
 					@logger.debug "Timeout from #{device.name} while in state UNCONNECTED"}
-				event :disconnect, :UNCONNECTED
+				event :disconnect, :DISCONNECTED
 			end
 			state :WAIT_FOR_CONNECTION do
 				event :connect_response, :CONNECTED, :device_connected
 				event :timeout, :WAIT_FOR_CONNECTION, :retry_to_register
-				event :disconnect, :UNCONNECTED
+				event :disconnect, :DISCONNECTED
 			end
 			state :CONNECTED do
 				event :connect_response, :CONNECTED, :registration_renewed
-				event :timeout, :UNCONNECTED, :device_disconnected
-				event :disconnect, :UNCONNECTED, :device_disconnect
+				event :timeout, :DISCONNECTED, :device_disconnected
+				event :disconnect, :DISCONNECTED, :device_disconnect
 			end
 		end
-
-		connect
 	end
 
 	def connect
-		@register_attempt_delay = REGISTER_FIRST_ATTEMPT_DELAY + rand(REGISTER_FIRST_ATTEMPT_DELAY_RANDOM)
+		@register_attempt_delay = REGISTER_FIRST_ATTEMPT_DELAY + random.rand(REGISTER_FIRST_ATTEMPT_DELAY_RANDOM)
 		@register_next_attempt_delay = REGISTER_ATTEMPT_DELAY
 		@machine.connect
 	end
 
 	def disconnect
-		@machine.send :disconnect
+		@machine.disconnect
 	end
+
+	def state
+		return @connected ? ConnectionState::State::CONNECTED : ConnectionState::State::DISCONNECTED
+	end
+
+	def connected?
+		@connected
+	end
+
+	def when_connection_changed &block
+		@connection_listeners << block
+	end
+
+	def xbee_connect_response
+		@machine.connect_response
+	end
+
+	def xbee_timeout
+		@machine.timeout
+	end
+
+	def xbee_connection_state
+		@machine.state
+	end
+
+	private
 
 	def device_disconnect
 		send_message CoYoHoMessages::COYOHO_REMOVE_LISTENER
@@ -120,22 +146,6 @@ module XBeeConnectionState
 		@timeout_job.unschedule if @timeout_job
 		@timeout_job = nil
 		try_to_register
-	end
-
-	def connection_state_fire event
-		@machine.send event
-	end
-
-	def state
-		return @connected ? ConnectionState::State::CONNECTED : ConnectionState::State::DISCONNECTED
-	end
-	
-	def connected?
-		@connected
-	end
-
-	def when_connection_changed &block
-		@connection_listeners << block
 	end
 
 	def notify_connection_listeners

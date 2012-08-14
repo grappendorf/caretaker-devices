@@ -18,17 +18,19 @@ limitations under the License.
 
 =end
 
-require 'grape'
-require 'apis/device_api'
-require 'apis/device_script_api'
+require 'machinist'
+require 'dm-machinist'
+require 'devices/device_script'
+require 'devices/device'
 
-module API
+Device.blueprint do
+	id {sn.to_i}
+	name {"Device #{sn}"}
+	address {'%08x' %[sn]}
+end
 
-	class CoYoHoAPI < Grape::API
-		
-		mount DeviceAPI
-		mount DeviceScriptAPI
-		
-	end
-	
+DeviceScript.blueprint do
+	id {1}
+	name {'Script'}
+	enabled {true}
 end

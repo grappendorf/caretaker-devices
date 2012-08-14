@@ -31,9 +31,6 @@ module DummyConnectionState
 	def when_connection_changed &block
 	end
 
-	def start_device_connection_state
-	end
-
 	def connect
 	end
 

@@ -38,10 +38,10 @@ def load_yaml path
 end
 
 #require 'simplecov'
-# SimpleCov.start do
-	# root '/home/grappendorf/workspace-grapelabs/net.grappendorf.coyoho.server'
-	# command_name 'cucumber'
-# end
+#SimpleCov.start do
+#	root '/home/grappendorf/workspace-grapelabs/coyoho/coyoho-server'
+#	command_name 'cucumber'
+#end
 
 environment_name = ENV['COYOHO_ENV'] || 'development'
 
@@ -72,18 +72,15 @@ end
 	config.each {|option, value| Logging.logger[logger].send(option + '=', value)}
 end  
 
+Logging.logger[:boot].info "Running in environment '#{environment_name}'"
+
 require 'java'
-require 'java/log4j-properties.jar'
-require 'java/rxtx-2.2pre2.jar'
-require 'java/xbee-api-0.9.jar'
-require 'java/log4j-1.2.16.jar'
 require 'java/vaadin-chameleon-theme-1.0.2.jar'
 require 'java/chameleon-dark.jar'
-require 'rufus/scheduler'
 require 'thread_storm'
 require 'rack'
 require 'i18n'
-require 'util/oo_helpers'
+require 'util/assert_helpers'
 require 'util/dm_rest_adapter_helpers'
 require 'util/string_helpers'
 require 'util/range_helpers'
@@ -107,6 +104,7 @@ require 'devices/devices_view'
 require 'devices/device_script_view'
 require 'application'
 require 'rubydin-optional-standalone/server'
+require 'scheduler'
 
 I18n.load_path << Dir['config/locales/*.{rb,yml}']
 
@@ -116,8 +114,8 @@ end
 
 console = false
 
-register(:scheduler) {Rufus::Scheduler.start_new}
 register(:async) {ThreadStorm.new size:2}
+register(:random) {Random.new Random.new_seed}
 
 lookup(:device_manager).start
 lookup(:device_script_manager).start

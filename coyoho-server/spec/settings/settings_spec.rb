@@ -1,11 +1,32 @@
-require 'spec_helper'
+=begin
+
+This file is part of the CoYoHo Control Your Home System.
+
+Copyright 2011-2012 Dirk Grappendorf, www.grappendorf.net
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+=end
+
 require 'settings/settings'
 
 describe Settings do
-	it 'initializes the settings service with defualt values' do		
+	
+	it 'initializes the settings service with defualt values' do
 		s = lookup :settings
-		s.admin_password.should == 'admin'
-		s.user_password.should == 'user'
-		s.serial_device.should == '/dev/ttyUSB0'
+		s.admin_password.should eq 'admin'
+		s.user_password.should eq 'user'
+		s.serial_device.should eq '/dev/ttyUSB0'
 	end
+	
 end

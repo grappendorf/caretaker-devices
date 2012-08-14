@@ -18,6 +18,8 @@ limitations under the License.
 
 =end
 
+require 'devices/device_controller'
+
 class RobotController < DeviceController
 	
 end

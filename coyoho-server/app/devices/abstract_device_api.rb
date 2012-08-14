@@ -19,31 +19,21 @@ limitations under the License.
 =end
 
 require 'grape'
-require 'json'
-require 'devices/device_script'
+require 'devices/device_manager'
 
 module API
 
-	class DeviceScriptAPI < Grape::API
+	class AbstractDeviceAPI < Grape::API
 	
-		version '1', using: :header
+		helpers do
+
+			inject :device_manager
 		
-		resource :device_scripts do
-			
-			get do
-				DeviceScript.all
+			def device address
+				device_manager.device_by_address address	
 			end
-	
-			get 'count' do
-				DeviceScript.count
-			end
-	
-			get ':id' do
-				DeviceScript.get(params[:id])
-			end
-			
 		end
-	
+		
 	end
 
 end

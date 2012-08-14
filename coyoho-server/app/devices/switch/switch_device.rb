@@ -59,7 +59,11 @@ class SwitchDevice < Device
 	end
 	
 	def switch switch_num, on_or_off
-		set_state switch_num, on_or_off ? ON : OFF
+		if on_or_off == ON or on_or_off == OFF
+			set_state switch_num, on_or_off
+		else			
+			set_state switch_num, on_or_off ? ON : OFF
+		end
 	end
 	
 	def on? switch_num

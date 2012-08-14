@@ -66,7 +66,7 @@ class DeviceManager
 		end
 		message_code = message.data[0]
 		if message_code == (CoYoHoMessages::COYOHO_MESSAGE_RESPONSE | CoYoHoMessages::COYOHO_ADD_LISTENER)
-			device.connection_state_fire :connect_response
+			device.xbee_connect_response
 			return
 		end
 		message_type = message.data[0] & CoYoHoMessages::COYOHO_MESSAGE_TYPE_MASK

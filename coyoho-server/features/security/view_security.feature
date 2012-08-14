@@ -2,15 +2,16 @@ Feature:
 
 	Some views are only accessible by administrator user.
 
-	Scenario: Administrators
+	Scenario: 
 		
-		Given I log in as "admin" with password "admin" 
-		Then I should see "Logged in as admin"
+		Administrators can activate secured views
+		
+		Given I log in as admin 
 		Then I should see "Console"
-		And I should see "Settings"
 
-	Scenario: Normal users
+	Scenario: 
+	
+		Normal users don't see secured view navigation buttons
 		
-		When I log in as "user" with password "user" 
+		Given I log in as user 
 		Then I should not see "Console"
-		And I should not see "Settings"

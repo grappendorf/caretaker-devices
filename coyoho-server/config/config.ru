@@ -1,3 +1,3 @@
-require 'apis/apis'
+require 'api'
 
 run API::CoYoHoAPI

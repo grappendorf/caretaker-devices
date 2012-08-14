@@ -24,15 +24,16 @@ class SettingsView < View
 
 	register_as :settings_view, scope: :session
 
-	secure :view, [:admin]
-
 	inject :settings
 
 	def initialize
-		super T('view.settings.name'), T('view.settings.title'), 'icons/48/settings.png', 6
+		super T('view.settings.name'), T('view.settings.title_user'), 'icons/48/settings.png', 6
 	end
 
 	def create_content
+		if application.user.roles.include? :admin
+			self.title = T('view.settings.title_admin')
+		end
 		item = Rubydin::DataItem.new settings
 		gui = Rubydin::Builder.new
 		gui.VerticalLayout do |v|

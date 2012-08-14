@@ -56,7 +56,7 @@ class Settings
 	end
 
 	register :settings do
-		if File.exists?(SETTINGS_FILE_NAME)
+		if SETTINGS_FILE_NAME and File.exists?(SETTINGS_FILE_NAME)
 			YAML::load(File.read(SETTINGS_FILE_NAME))
 		else
 			Settings.new.tap do |s|

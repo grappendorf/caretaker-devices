@@ -18,6 +18,12 @@ limitations under the License.
 
 =end
 
+require 'java'
+require 'java/xbee-api-0.9.jar'
+require 'java/rxtx-2.2pre2.jar'
+require 'java/log4j-1.2.16.jar'
+require 'java/log4j-properties.jar'
+
 class XbeeMaster
 
 	java_import com.rapplogic.xbee.api.PacketListener

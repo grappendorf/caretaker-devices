@@ -27,11 +27,11 @@ class String
 	end
 
 	def is_binary_data?
-		(self.count( "^ -~", "^\r\n" ).fdiv(self.size) > 0.3 || self.index( "\x00" )) unless empty?
+		(self.count("^ -~", "^\r\n").fdiv(self.size) > 0.3 || self.index("\x00")) unless empty?
 	end
 
 	def to_underscore!
-		self.gsub!(/(.)([A-Z])/,'\1_\2').downcase!
+		self.gsub(/::/, '/').gsub(/([A-Z]+)([A-Z][a-z])/,'\1_\2').gsub(/([a-z\d])([A-Z])/,'\1_\2').tr("-", "_").downcase!
 	end
 
 	def to_underscore
@@ -39,7 +39,7 @@ class String
 	end
 
 	def strip_heredoc
-		indent = scan(/^[ \t]*(?=\S)/).min.try(:size) || 0
+		indent = scan(/^[ \t]*(?=\S)/).min.size
 		gsub(/^[ \t]{#{indent}}/, '')
 	end
 	

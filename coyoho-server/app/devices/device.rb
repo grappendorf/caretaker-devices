@@ -18,11 +18,13 @@ limitations under the License.
 
 =end
 
+require 'data_mapper'
+require 'util/datamapper_helpers'
 require 'devices/connection_state/connection_state'
 
 class Device
 	
-	include DataMapper::Resource
+	include DomainObject
 
 	property :id, Serial
 	property :type, Discriminator
@@ -74,7 +76,7 @@ class Device
 	end
 	
 	def start
-		start_device_connection_state		
+		connect
 	end
 	
 	def stop

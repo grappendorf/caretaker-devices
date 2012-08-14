@@ -53,41 +53,41 @@ end
 
 class Module
 
-	attr_accessor :_oo_helpers_is_interface
+	attr_accessor :_assert_helpers_is_interface
 
-	def _oo_helpers_abstract_methods
-		@_oo_helpers_abstract_methods ||= []
+	def _assert_helpers_abstract_methods
+		@_assert_helpers_abstract_methods ||= []
 	end
 
-	def _oo_helpers_ensure_that_all_interface_methods_are_implemented interface_module
-		missing = interface_module._oo_helpers_abstract_methods - self.instance_methods(false)
+	def _assert_helpers_ensure_that_all_interface_methods_are_implemented interface_module
+		missing = interface_module._assert_helpers_abstract_methods - self.instance_methods(false)
 		if missing != []
 			raise AssertionFailure.new "Unimplemented #{interface_module} methods in #{self}: #{missing}"
 		end
 	end
 
 	def interface
-		@_oo_helpers_is_interface = true
+		@_assert_helpers_is_interface = true
 	end
 
 	def abstract name
-		if not _oo_helpers_is_interface
+		if not _assert_helpers_is_interface
 			raise AssertionFailure.new "#{self} module: To use abstract methods, please tag this module with 'interface'"
 		end
-		_oo_helpers_abstract_methods << name
+		_assert_helpers_abstract_methods << name
 		define_method(name){raise NotImplementedError}
 	end
 
 	def implements interface_module
-		if not interface_module._oo_helpers_is_interface
+		if not interface_module._assert_helpers_is_interface
 			raise AssertionFailure.new "#{self} module: Please tag interface module #{interface_module} with 'interface'"
 		end
-		@_oo_helpers_interface_module = interface_module
+		@_assert_helpers_interface_module = interface_module
 		instance_eval do
 
 			def defined file, line, method
 				if method != :instance_eval
-					_oo_helpers_ensure_that_all_interface_methods_are_implemented @_oo_helpers_interface_module
+					_assert_helpers_ensure_that_all_interface_methods_are_implemented @_assert_helpers_interface_module
 				end
 			end
 			

@@ -62,17 +62,18 @@ en:
       delete_confirm: Do you really want to delete the following device(s)?<br /><b>%{devices}</b>
       edit_device_with_name: Edit device "%{device}" 
     device_scripts:
-      name: Geräte-Programme
-      title: Geräte-Programme
+      name: Device scripts
+      title: Device scripts
     help:
       name: Help
       title: Help
     login:
-      title: CoYoHo - Anmeldung
-      name: Settings
+      name: CoYoHo - Login
+      title: CoYoHo - Login
     settings:
-      title: Settings
-      name: System Info
+      name: Settings
+      title_user: Edit personal settings
+      title_admin: Edit system and personal settings
     system_info:
       name: System Info
       title: System Info

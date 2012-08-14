@@ -32,6 +32,7 @@ module API
 	class DeviceAPI < Grape::API
 
 		version '1', using: :header
+		default_format :json
 
 		resource :devices do
 

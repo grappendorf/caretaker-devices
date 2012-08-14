@@ -1,5 +1,6 @@
 When /^I log in as "([^"]*)" with password "([^"]*)"$/ do |username,password|
 	visit '/'
+	find :xpath, '//iframe[@name="PID5"]'
 	within_frame('PID5') do
 		fill_in 'username', with: username
 		fill_in 'password', with: password
@@ -18,8 +19,8 @@ end
 
 Then /^I should see the login dialog$/ do
 	page.should have_content 'Welcome to CoYoHo!'
+	find :xpath, '//iframe[@name="PID5"]'
 	within_frame('PID5') do
 		page.should have_content 'Login'
 	end
 end
-
