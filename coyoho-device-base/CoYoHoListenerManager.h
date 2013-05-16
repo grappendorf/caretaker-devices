@@ -19,6 +19,7 @@
 #ifndef COYOHO_LISTENER_MANAGER_H_
 #define COYOHO_LISTENER_MANAGER_H_
 
+#include <Arduino.h>
 #include <XXBee/XXBee.h>
 #include <CoYoHoMessages.h>
 
@@ -29,7 +30,8 @@ template<int MAX_LISTENERS> class ListenerManager
 	public:
 
 	ListenerManager(class XBee * xbee)
-	: xbee(xbee)
+	: xbee(xbee),
+	  nextListenerNotifyMillis(0)
 	{
 		for (uint8_t i = 0; i < MAX_LISTENERS; ++i)
 		{

@@ -1,3 +1,5 @@
+workspace.xml
+*/.idea/tasks.xml
 build/
 coyoho-android/bin/
 coyoho-android/gen/
@@ -7,3 +9,5 @@ coyoho-server/log/
 */eagle/*.b#?
 */*.s#?
 */*.b#?
+log/*.log
+atlassian-ide-plugin.xml
