@@ -1,25 +1,3 @@
-#Tue Mar 15 23:27:52 GMT 2011
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/ClockFrequency=16000000
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/ExtRAMSize=0
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/ExtendedRAM=false
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/MCUType=atmega328p
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/UseEEPROM=false
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/UseExtendedRAMforHeap=true
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/BitBangDelay=
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/Bitclock=
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/EEPROMFile=
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/EEPROMFromConfig=true
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/FlashFile=
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/FlashFromConfig=true
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/NoChipErase=false
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/NoSigCheck=true
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/NoVerify=false
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/NoWrite=false
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/OtherOptions=
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/ProgrammerID=programmerconfig.7
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/UseCounter=false
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/WriteEEPROM=false
-avrtarget/de.innot.avreclipse.configuration.app.debug.1763614217/avrdude/WriteFlash=true
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/ClockFrequency=16000000
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/ExtRAMSize=0
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/ExtendedRAM=false
@@ -37,7 +15,7 @@ avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/NoSig
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/NoVerify=false
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/NoWrite=false
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/OtherOptions=
-avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/ProgrammerID=programmerconfig.7
+avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/ProgrammerID=programmerconfig.10
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/UseCounter=false
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/WriteEEPROM=false
 avrtarget/de.innot.avreclipse.configuration.app.release.1184885717/avrdude/WriteFlash=true
