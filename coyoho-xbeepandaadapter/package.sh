@@ -5,7 +5,8 @@ mkdir -p build
 rm -f build/*.zip
 cd ..
 zip ${PROJECT_DIR}/build/coyoho-xbeepandaadapter-$VERSION.zip ${PROJECT_DIR} -r \
-	--exclude ${PROJECT_DIR}/build/\* \
-	--exclude ${PROJECT_DIR}/\*.b\#? \
-	--exclude ${PROJECT_DIR}/\*.s\#?
+    --exclude ${PROJECT_DIR}/build/\* \
+    --exclude \*/eagle.epf \
+    --exclude ${PROJECT_DIR}/\*.b\#? \
+    --exclude ${PROJECT_DIR}/\*.s\#?
 cd ${PROJECT_DIR}
