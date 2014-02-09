@@ -5,11 +5,8 @@ coyoho-android/bin/
 coyoho-android/gen/
 coyoho-server/coverage/
 coyoho-server/log/
-*/eagle/*.s#?
-*/eagle/*.b#?
-*/eagle/eagle.epf
-*/*.s#?
-*/*.b#?
-*/eagle.epf
+**/*.s#?
+**/*.b#?
+**/eagle.epf
 log/*.log
 atlassian-ide-plugin.xml
