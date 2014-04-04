@@ -10,19 +10,19 @@
  * High Fuse:		0xD9
  * Extended Fuse:	0xFF
  *
- * Reflow process:
+ * Reflow profile for Sn63Pb37 or Sn62Pb36Ag02:
  *
  * Temperature [°C]
  *
- * 225-|                                               x  x
+ * 225-|                                               x  x <---------- Peak 210-225
  *     |                                            x        x
  *     |                                         x              x
  *     |                                      x                    x
- * 200-|                                   x                          x
+ * 180-|-----------------------------------x                          x
  *     |                              x    |                          |   x
  *     |                         x         |                          |       x
  *     |                    x              |                          |
- * 150-|               x                   |                          |
+ * 150-|---------------x                   |                          |
  *     |             x |                   |                          |
  *     |           x   |                   |                          |
  *     |         x     |                   |                          |
@@ -30,10 +30,10 @@
  *     |     x         |                   |                          |
  *     |   x           |                   |                          |
  * 30 -| x             |                   |                          |
- *     |<  60 - 90 s  >|<    90 - 120 s   >|<       90 - 120 s       >|
- *     | Preheat Stage |   Soaking Stage   |       Reflow Stage       | Cool
+ *     |   < 1.8°C/s   | 30-60 typ 120 max |        90 - 120 s        |
+ *     |<Preheat Stage>|<--Soaking Stage-->|<------Reflow Stage------>|<--Cool-
  *  0  |_ _ _ _ _ _ _ _|_ _ _ _ _ _ _ _ _ _|_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
- *                                                                      Time [s]
+ *                     90                 180                        270    Time [s]
  */
 
 /**
@@ -41,11 +41,20 @@
  * include and delete the path prefixes from the other includes.
  */
 
+/**
+ * If you don't want to compile in support for CoYoHo, comment out the following line
+ */
+#define COYOHO 1
+
 #include <Arduino.h>
 #include <LiquidCrystal/LiquidCrystal.h>
 #include <Bounce/Bounce.h>
 #include <PID/PID.h>
 #include <Adafruit_MAX31855/Adafruit_MAX31855.h>
+#ifdef COYOHO
+#include <CoYoHoMessages.h>
+#include <CoYoHoListenerManager.h>
+#endif
 
 // IO pins
 
@@ -106,7 +115,7 @@ const double TEMP_CORRECTION_FACTOR = 1.0;
 
 const unsigned long PID_SAMPLE_INTERVAL = 1000;
 
-const double PID_KP_PREHEAT = 80;
+const double PID_KP_PREHEAT = 120;
 const double PID_KI_PREHEAT = 0.03;
 const double PID_KD_PREHEAT = 20;
 
@@ -118,16 +127,18 @@ const double PID_KP_REFLOW = 150;
 const double PID_KI_REFLOW = 0.1;
 const double PID_KD_REFLOW = 25;
 
-const double REFLOW_TEMP_START = 50;
-const double REFLOW_TEMP_SOAK = 140;
-const double REFLOW_TEMP_REFLOW = 170;
-const double REFLOW_TEMP_MAX = 205;
-const double REFLOW_TEMP_MAX_OFFSET = 5;
-const double REFLOW_TEMP_COOL = 190;
-const double REFLOW_TEMP_END = 60;
+const double REFLOW_TEMP_PREHEAT_START = 50;
+const double REFLOW_TEMP_PREHEAT_END = 155;
+const double REFLOW_TEMP_SOAK_START = 150;
+const double REFLOW_TEMP_SOAK_END = 185;
+const double REFLOW_TEMP_REFLOW_START = 180;
+const double REFLOW_TEMP_REFLOW_MAX = 235;
+const double REFLOW_TEMP_REFLOW_PEAK = 225;
+const double REFLOW_TEMP_REFLOW_END = 190;
+const double REFLOW_TEMP_END = 50;
 const double SOAK_TEMP_STEP = 5;
 
-const double OFF_COOLING_TEMP = 40.0;
+const double COOLING_TEMP = 45.0;
 
 const unsigned long SOAK_INTERVAL = 15000;
 
@@ -144,7 +155,9 @@ unsigned long windowSize = 2500;
 
 unsigned long windowStartTime;
 
-double offCoolingTempTarget = OFF_COOLING_TEMP;
+double offCoolingTempTarget = COOLING_TEMP;
+
+bool cooling = false;
 
 // State machine
 
@@ -181,13 +194,52 @@ unsigned int elapsedSeconds = 0;
 
 unsigned long nextElapsedSecondsUpdate = 0;
 
+// CoYoHo
+
+#ifdef COYOHO
+const long XBEE_BAUD_RATE = 57600;
+XXBee<8> xbee;
+ListenerManager<4> listenerManager(&xbee);
+ZBRxResponse rxResponse;
+unsigned long nextNotifyListeners = 0;
+#endif
+
+void heater(boolean on);
+void fan(boolean on);
+void updatePID();
+void updateHeater();
+void updateDisplay();
+void offCooling();
+void setup();
+void enterMode(Mode newMode, State newState);
+void enterState(State newState);
+void modeOff();
+void modeCool();
+void modeManual();
+void modeReflow();
+void loop();
+
+#ifdef COYOHO
+void notifyTemperatureToListeners();
+void notifyStatusToListeners();
+void processXBeeMessages();
+#endif
+
 /**
  * Switch the heater on or off.
  * @param on if true, the heater is switched on
  */
 void heater(boolean on)
 {
+#ifdef COYOHO
+	boolean oldOn = digitalRead(RELAY) == HIGH;
+#endif
 	digitalWrite(RELAY, on ? HIGH : LOW);
+#ifdef COYOHO
+	if (on != oldOn) {
+		notifyStatusToListeners();
+	}
+#endif
 }
 
 /**
@@ -196,7 +248,15 @@ void heater(boolean on)
  */
 void fan(boolean on)
 {
+#ifdef COYOHO
+	boolean oldOn = digitalRead(FAN) == HIGH;
+#endif
 	digitalWrite(FAN, on ? HIGH : LOW);
+#ifdef COYOHO
+	if (on != oldOn) {
+		notifyStatusToListeners();
+	}
+#endif
 }
 
 /**
@@ -260,7 +320,7 @@ void updateDisplay()
 		lcd.print(elapsedSeconds);
 		lcd.write('s');
 	}
-	lcd.print("          ");
+	lcd.print("           ");
 
 	// Print the current mode and state
 	lcd.setCursor(0, 1);
@@ -277,11 +337,13 @@ void updateDisplay()
 void offCooling()
 {
 	heater(false);
-	if (temp > OFF_COOLING_TEMP + 5.0) {
-		fan(true);
-	} else if (temp < OFF_COOLING_TEMP) {
-		fan(false);
+	if (temp > COOLING_TEMP + 2 && ! cooling) {
+		cooling = true;
 	}
+	if (cooling && temp < COOLING_TEMP - 2) {
+		cooling = false;
+	}
+	fan(cooling);
 }
 
 /**
@@ -306,12 +368,53 @@ void setup()
 	lcd.createChar(SYM_HEATER, heaterSymbol);
 	lcd.createChar(SYM_FAN, fanSymbol);
 
+#ifdef COYOHO
+	xbee.begin(XBEE_BAUD_RATE);
+#endif
+
 	pid.SetOutputLimits(0, windowSize);
 	pid.SetSampleTime(PID_SAMPLE_INTERVAL);
 	pid.SetMode(AUTOMATIC);
 
 	setpoint = 23;
 	windowStartTime = millis();
+}
+
+/**
+ * Enter a new mode and state.
+ * @param newMode The new mode
+ * @param newState The new state
+ */
+void enterMode(Mode newMode, State newState)
+{
+#ifdef COYOHO
+	Mode oldMode = mode;
+	State oldState = state;
+#endif
+	mode = newMode;
+	state = newState;
+#ifdef COYOHO
+	if (newMode != oldMode || newState != oldState) {
+		notifyStatusToListeners();
+	}
+#endif
+}
+
+/**
+ * Enter a new state.
+ * @param newState The new state
+ */
+void enterState(State newState)
+{
+#ifdef COYOHO
+	State oldState = state;
+#endif
+	state = newState;
+#ifdef COYOHO
+	if (newState != oldState) {
+		notifyStatusToListeners();
+	}
+#endif
 }
 
 /**
@@ -324,7 +427,7 @@ void modeOff()
 	heater(false);
 	fan(false);
 	if (buttonRed.fallingEdge()) {
-		mode = MODE_REFLOW;
+		enterMode(MODE_REFLOW, STATE_IDLE);
 	}
 }
 
@@ -337,8 +440,7 @@ void modeCool()
 {
 	offCooling();
 	if (buttonRed.fallingEdge()) {
-		fan(false);
-		mode = MODE_MANUAL;
+		enterMode(MODE_MANUAL, STATE_IDLE);
 	}
 }
 
@@ -351,21 +453,22 @@ void modeManual()
 {
 	switch (state) {
 		case STATE_IDLE:
+			fan(false);
 			heater(false);
 			if (buttonRed.fallingEdge()) {
-				mode = MODE_OFF;
+				enterMode(MODE_OFF, STATE_IDLE);
 			}
 			if (buttonGreen.fallingEdge()) {
-				state = STATE_SET;
+				enterState(STATE_SET);
 			}
 			break;
 		case STATE_SET:
 			if (buttonRed.fallingEdge()) {
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
 			if (buttonGreen.fallingEdge()) {
 				pid.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
-				state = STATE_HEAT;
+				enterState(STATE_HEAT);
 			}
 			if (buttonYellowLeft.fallingEdge()) {
 				setpoint = min(setpoint + 1, MAX_TEMP);
@@ -391,11 +494,11 @@ void modeManual()
 			updateHeater();
 			if (buttonRed.fallingEdge()) {
 				heater(false);
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
 			if (buttonGreen.fallingEdge()) {
 				heater(false);
-				state = STATE_SET;
+				enterState(STATE_SET);
 			}
 			break;
 		default:
@@ -413,57 +516,57 @@ void modeReflow()
 	switch (state) {
 		case STATE_IDLE:
 			if (buttonRed.fallingEdge()) {
-				mode = MODE_COOL;
+				enterMode(MODE_COOL, STATE_IDLE);
 			}
 			if (buttonGreen.fallingEdge()) {
-				setpoint = REFLOW_TEMP_START;
-				state = STATE_PRECOOL;
+				enterState(STATE_PRECOOL);
 			}
 			break;
 		case STATE_PRECOOL:
+			setpoint = REFLOW_TEMP_PREHEAT_START;
 			if (buttonRed.fallingEdge()) {
 				heater(false);
 				fan(false);
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
-			fan(temp > REFLOW_TEMP_START);
-			if (temp < REFLOW_TEMP_START) {
-				setpoint = REFLOW_TEMP_SOAK;
+			fan(temp > REFLOW_TEMP_PREHEAT_START);
+			if (temp < REFLOW_TEMP_PREHEAT_START) {
+				setpoint = REFLOW_TEMP_PREHEAT_END;
 				pid.SetTunings(PID_KP_PREHEAT, PID_KI_PREHEAT, PID_KD_PREHEAT);
 				elapsedSeconds = 0;
 				windowStartTime = millis();
-				state = STATE_PREHEAT;
+				enterState(STATE_PREHEAT);
 			}
 			break;
 		case STATE_PREHEAT:
 			if (buttonRed.fallingEdge()) {
 				heater(false);
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
 			updatePID();
 			updateHeater();
-			if (temp > REFLOW_TEMP_SOAK) {
+			if (temp > REFLOW_TEMP_SOAK_START) {
 				pid.SetTunings(PID_KP_SOAK, PID_KI_SOAK, PID_KD_SOAK);
-				setpoint = REFLOW_TEMP_SOAK + SOAK_TEMP_STEP;
+				setpoint = REFLOW_TEMP_SOAK_START + SOAK_TEMP_STEP;
 				elapsedSeconds = 0;
 				nextSoakUpdate = millis() + SOAK_INTERVAL;
-				state = STATE_SOAK;
+				enterState(STATE_SOAK);
 			}
 			break;
 		case STATE_SOAK:
 			if (buttonRed.fallingEdge()) {
 				heater(false);
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
 			updatePID();
 			updateHeater();
-			if (temp > REFLOW_TEMP_REFLOW) {
+			if (temp > REFLOW_TEMP_REFLOW_START) {
 				pid.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
-				setpoint = REFLOW_TEMP_MAX;
+				setpoint = REFLOW_TEMP_REFLOW_MAX;
 				elapsedSeconds = 0;
-				state = STATE_REFLOW;
+				enterState(STATE_REFLOW);
 			} else if (millis() > nextSoakUpdate) {
-				if (setpoint < REFLOW_TEMP_REFLOW) {
+				if (setpoint < REFLOW_TEMP_SOAK_END) {
 					setpoint += SOAK_TEMP_STEP;
 				}
 				nextSoakUpdate = millis() + SOAK_INTERVAL;
@@ -472,15 +575,15 @@ void modeReflow()
 		case STATE_REFLOW:
 			if (buttonRed.fallingEdge()) {
 				heater(false);
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
 			updatePID();
 			updateHeater();
-			if (temp > REFLOW_TEMP_MAX - REFLOW_TEMP_MAX_OFFSET) {
+			if (temp > REFLOW_TEMP_REFLOW_PEAK) {
 				pid.SetTunings(PID_KP_REFLOW, PID_KI_REFLOW, PID_KD_REFLOW);
-				setpoint = REFLOW_TEMP_COOL;
+				setpoint = REFLOW_TEMP_REFLOW_END;
 				elapsedSeconds = 0;
-				state = STATE_REFLOW_COOL;
+				enterState(STATE_REFLOW_COOL);
 			}
 			break;
 		case STATE_REFLOW_COOL:
@@ -488,22 +591,22 @@ void modeReflow()
 			updateHeater();
 			if (buttonRed.fallingEdge()) {
 				heater(false);
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
-			if (temp < REFLOW_TEMP_COOL) {
+			if (temp < REFLOW_TEMP_REFLOW_END) {
 				heater(false);
-				state = STATE_COOL;
+				enterState(STATE_COOL);
 			}
 			break;
 		case STATE_COOL:
 			fan(true);
 			if (buttonRed.fallingEdge()) {
 				fan(false);
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
 			if (temp < REFLOW_TEMP_END) {
 				fan(false);
-				state = STATE_IDLE;
+				enterState(STATE_IDLE);
 			}
 			break;
 		default:
@@ -516,6 +619,15 @@ void modeReflow()
  */
 void loop()
 {
+#ifdef COYOHO
+	listenerManager.checkListenerLeases();
+	processXBeeMessages();
+	if (millis() > nextNotifyListeners) {
+		notifyTemperatureToListeners();
+		nextNotifyListeners = millis() + 1000;
+	}
+#endif
+
 	buttonRed.update();
 	buttonGreen.update();
 	buttonYellowLeft.update();
@@ -524,7 +636,7 @@ void loop()
 	if (millis() > nextThermoRead) {
 		do {
 			temp = thermo.readCelsius();
-		} while (temp == NAN);
+		} while (temp == NAN || thermo.readError());
 		temp = temp * TEMP_CORRECTION_FACTOR;
 		nextThermoRead = millis() + THERMO_READ_INTERVAL;
 	}
@@ -538,10 +650,10 @@ void loop()
 
 	if (tempError) {
 		heater(false);
-		state = STATE_ERROR;
+		enterState(STATE_ERROR);
 		return;
 	} else if (state == STATE_ERROR) {
-		state = STATE_IDLE;
+		enterState(STATE_IDLE);
 		return;
 	}
 
@@ -563,3 +675,96 @@ void loop()
 			break;
 	}
 }
+
+#ifdef COYOHO
+
+/**
+ * Notify any CoYoHo listeners about the current temperature.
+ */
+void notifyTemperatureToListeners()
+{
+	uint16_t temp16 = temp;
+	uint8_t tempMessage[] = { COYOHO_SENSOR_TEMPERATURE | COYOHO_MESSAGE_NOTIFY,
+			0, temp16 >> 8, temp16 & 255 };
+	listenerManager.notifyListeners(tempMessage, sizeof(tempMessage));
+}
+
+/**
+ * Notify any CoYoHo listeners about a mode or state change.
+ */
+void notifyStatusToListeners()
+{
+	uint8_t statusMessage[] = { COYOHO_REFLOW_OVEN_STATUS | COYOHO_MESSAGE_NOTIFY,
+			mode, state, digitalRead(RELAY), digitalRead(FAN) };
+	listenerManager.notifyListeners(statusMessage, sizeof(statusMessage));
+}
+
+/**
+ * Process XBee messages.
+ */
+void processXBeeMessages()
+{
+	xbee.readPacket();
+	if (xbee.getResponse().isAvailable()) {
+		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE) {
+			xbee.getResponse().getZBRxResponse(rxResponse);
+			xbee.resetData(rxResponse.getData(), rxResponse.getDataLength());
+			while (xbee.dataAvailable()) {
+				uint8_t command = xbee.getData();
+
+				if (listenerManager.processXBeeMessage(command, xbee, rxResponse)) {
+					continue;
+				}
+
+				switch (command) {
+					case COYOHO_REFLOW_OVEN_ACTION:
+						if (xbee.dataAvailable()) {
+							uint8_t ovenCommand = xbee.getData();
+							switch (ovenCommand) {
+								case COYOHO_REFLOW_OVEN_OFF:
+									enterMode(MODE_OFF, STATE_IDLE);
+									break;
+
+								case COYOHO_REFLOW_OVEN_START:
+									enterMode(MODE_REFLOW, STATE_PRECOOL);
+									break;
+
+								case COYOHO_REFLOW_OVEN_COOL:
+									enterMode(MODE_COOL, STATE_IDLE);
+									break;
+							}
+						}
+						break;
+
+					case COYOHO_SENSOR_READ:
+						if (xbee.dataAvailable(1))
+						{
+							uint8_t sensorNum = xbee.getData();
+							xbee.resetPayload();
+							xbee.putPayload(COYOHO_SENSOR_READ | COYOHO_MESSAGE_RESPONSE);
+							xbee.putPayload(sensorNum);
+							xbee.putPayload(temp);
+							ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
+									xbee.payloadLenght());
+							xbee.send(txRequest);
+						}
+						break;
+
+					case COYOHO_REFLOW_OVEN_STATUS:
+						xbee.resetPayload();
+						xbee.putPayload(COYOHO_REFLOW_OVEN_STATUS | COYOHO_MESSAGE_RESPONSE);
+						xbee.putPayload(mode);
+						xbee.putPayload(state);
+						xbee.putPayload(digitalRead(RELAY));
+						xbee.putPayload(digitalRead(FAN));
+						ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
+								xbee.payloadLenght());
+						xbee.send(txRequest);
+						break;
+				}
+			}
+		}
+	}
+}
+
+#endif
