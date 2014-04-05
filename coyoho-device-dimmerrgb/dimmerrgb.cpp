@@ -176,6 +176,7 @@ void processXBeeMessages()
 							xbee.putPayload(blue);
 							ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
 									xbee.payloadLenght());
+							txRequest.setAddress16(rxResponse.getRemoteAddress16());
 							xbee.send(txRequest);
 						}
 						break;
@@ -185,6 +186,10 @@ void processXBeeMessages()
 						xbee.putPayload(COYOHO_DUMP | COYOHO_MESSAGE_RESPONSE);
 						xbee.putPayload(COYOHO_DUMP_VERSION);
 						xbee.putPayload(COYOHO_VERSION);
+						ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
+								xbee.payloadLenght());
+						txRequest.setAddress16(rxResponse.getRemoteAddress16());
+						xbee.send(txRequest);
 						break;
 				}
 			}

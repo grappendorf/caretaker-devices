@@ -746,6 +746,7 @@ void processXBeeMessages()
 							xbee.putPayload(temp);
 							ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
 									xbee.payloadLenght());
+							txRequest.setAddress16(rxResponse.getRemoteAddress16());
 							xbee.send(txRequest);
 						}
 						break;
@@ -759,6 +760,7 @@ void processXBeeMessages()
 						xbee.putPayload(digitalRead(FAN));
 						ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
 								xbee.payloadLenght());
+						txRequest.setAddress16(rxResponse.getRemoteAddress16());
 						xbee.send(txRequest);
 						break;
 				}

@@ -35,22 +35,23 @@ template<int MAX_LISTENERS> class ListenerManager
 	{
 		for (uint8_t i = 0; i < MAX_LISTENERS; ++i)
 		{
-			listener[i] = XBeeAddress64(0, 0);
+			listener[i] = 0;
+			listener64[i] = XBeeAddress64(0, 0);
 		}
 	}
 
-	void addListener(XBeeAddress64 address)
+	void addListener(XBeeAddress64 address64, uint16_t address)
 	{
 		bool notifyListener = false;
 		uint8_t freeListener = MAX_LISTENERS;
 		uint8_t i = 0;
 		for (; i < MAX_LISTENERS; ++i)
 		{
-			if (listener[i].getMsb() == 0 && listener[i].getLsb() == 0 && freeListener == MAX_LISTENERS)
+			if (listener[i] == 0 && freeListener == MAX_LISTENERS)
 			{
 				freeListener = i;
 			}
-			else if (address.getMsb() == listener[i].getMsb() && address.getLsb() == listener[i].getLsb())
+			else if (address == listener[i])
 			{
 				notifyListener = true;
 				break;
@@ -61,25 +62,28 @@ template<int MAX_LISTENERS> class ListenerManager
 			notifyListener = true;
 			i = freeListener;
 			listener[i] = address;
+			listener64[i] = address64;
 		}
 		if (notifyListener)
 		{
 			uint8_t message[] =
 			{	COYOHO_MESSAGE_RESPONSE | COYOHO_ADD_LISTENER};
-			ZBTxRequest txRequest(address, message, sizeof(message));
+			ZBTxRequest txRequest(address64, message, sizeof(message));
+			txRequest.setAddress16(address);
 			xbee->send(txRequest);
 			listenerLeaseTimeout[i] = millis() + COYOHO_LISTENER_LEASE_TIME;
 		}
 	}
 
-	void removeListener(XBeeAddress64 address)
+	void removeListener(XBeeAddress64 address64, uint16_t address)
 	{
 		uint8_t i = 0;
 		for (; i < MAX_LISTENERS; ++i)
 		{
-			if (address.getMsb() == listener[i].getMsb() && address.getLsb() == listener[i].getLsb())
+			if (address == listener[i])
 			{
-				listener[i] = XBeeAddress64(0, 0);
+				listener[i] = 0;
+				listener64[i] = XBeeAddress64(0, 0);
 				listenerLeaseTimeout[i] = 0;
 				break;
 			}
@@ -88,7 +92,8 @@ template<int MAX_LISTENERS> class ListenerManager
 		{
 			uint8_t message[] =
 			{	COYOHO_MESSAGE_RESPONSE | COYOHO_REMOVE_LISTENER};
-			ZBTxRequest txRequest(address, message, sizeof(message));
+			ZBTxRequest txRequest(address64, message, sizeof(message));
+			txRequest.setAddress16(address);
 			xbee->send(txRequest);
 		}
 	}
@@ -97,9 +102,10 @@ template<int MAX_LISTENERS> class ListenerManager
 	{
 		for (uint8_t i = 0; i < MAX_LISTENERS; ++i)
 		{
-			if (listener[i].getMsb() != 0 && listener[i].getLsb() != 0 && millis() > listenerLeaseTimeout[i])
+			if (listener[i] != 0 && millis() > listenerLeaseTimeout[i])
 			{
-				listener[i] = XBeeAddress64(0, 0);
+				listener[i] = 0;
+				listener64[i] = XBeeAddress64(0, 0);
 			}
 		}
 	}
@@ -108,9 +114,10 @@ template<int MAX_LISTENERS> class ListenerManager
 	{
 		for (uint8_t i = 0; i < MAX_LISTENERS; ++i)
 		{
-			if (listener[i].getMsb() != 0 && listener[i].getLsb() != 0)
+			if (listener[i] != 0)
 			{
-				ZBTxRequest txRequest(listener[i], message, messageSize);
+				ZBTxRequest txRequest(listener64[i], message, messageSize);
+				txRequest.setAddress16(listener[i]);
 				xbee->send(txRequest);
 			}
 		}
@@ -126,16 +133,21 @@ template<int MAX_LISTENERS> class ListenerManager
 		return listener;
 	}
 
+	const XBeeAddress64* listenerAddresses64()
+	{
+		return listener64;
+	}
+
 	bool processXBeeMessage(uint8_t command, XBee &xbee, ZBRxResponse rxResponse)
 	{
 		switch(command)
 		{
 			case COYOHO_ADD_LISTENER:
-				addListener(rxResponse.getRemoteAddress64());
+				addListener(rxResponse.getRemoteAddress64(), rxResponse.getRemoteAddress16());
 				return true;
 
 			case COYOHO_REMOVE_LISTENER:
-				removeListener(rxResponse.getRemoteAddress64());
+				removeListener(rxResponse.getRemoteAddress64(), rxResponse.getRemoteAddress16());
 				return true;
 
 			default:
@@ -147,7 +159,9 @@ template<int MAX_LISTENERS> class ListenerManager
 
 	class XBee * xbee;
 
-	XBeeAddress64 listener[MAX_LISTENERS];
+	uint16_t listener[MAX_LISTENERS];
+
+	XBeeAddress64 listener64[MAX_LISTENERS];
 
 	unsigned long listenerLeaseTimeout[MAX_LISTENERS];
 

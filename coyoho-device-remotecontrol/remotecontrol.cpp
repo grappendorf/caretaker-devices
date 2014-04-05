@@ -436,8 +436,8 @@ void setup()
 	// TODO: Since the remote control device is in deep sleep mode all the time, we cannot listen
 	// to incoming listener requests (for this to happen we need to enable wake up on UART).
 	// To send listener messages to the server, here we hard coded the listeners.
-	listenerManager.addListener(XBeeAddress64(0x0013a200, 0x406131ae));
-	listenerManager.addListener(XBeeAddress64(0x0013a200, 0x404a500b));
+	listenerManager.addListener(XBeeAddress64(0x0013a200, 0x406131ae), ZB_BROADCAST_ADDRESS);
+	listenerManager.addListener(XBeeAddress64(0x0013a200, 0x404a500b), ZB_BROADCAST_ADDRESS);
 	updateCodeIndices();
 	xbeeSleep(true);
 	pinMode(XBEE_SLEEP, OUTPUT);
