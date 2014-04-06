@@ -128,7 +128,7 @@ template<int MAX_LISTENERS> class ListenerManager
 		return MAX_LISTENERS;
 	}
 
-	const XBeeAddress64* listenerAddresses()
+	const uint16_t* listenerAddresses()
 	{
 		return listener;
 	}
