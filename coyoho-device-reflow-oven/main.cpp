@@ -134,7 +134,7 @@ const double REFLOW_TEMP_SOAK_END = 185;
 const double REFLOW_TEMP_REFLOW_START = 180;
 const double REFLOW_TEMP_REFLOW_MAX = 235;
 const double REFLOW_TEMP_REFLOW_PEAK = 225;
-const double REFLOW_TEMP_REFLOW_END = 190;
+const double REFLOW_TEMP_REFLOW_END = 195;
 const double REFLOW_TEMP_END = 50;
 const double SOAK_TEMP_STEP = 5;
 
