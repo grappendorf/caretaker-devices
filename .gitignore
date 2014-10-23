@@ -1,5 +1,4 @@
-workspace.xml
-*/.idea/tasks.xml
+# Generated content
 build/
 coyoho-android/bin/
 coyoho-android/gen/
@@ -9,4 +8,11 @@ coyoho-server/log/
 *.b#?
 eagle.epf
 log/*.log
+
+# IntelliJ
 atlassian-ide-plugin.xml
+workspace.xml
+*/.idea/tasks.xml
+
+# Sublime
+*.sublime-workspace
