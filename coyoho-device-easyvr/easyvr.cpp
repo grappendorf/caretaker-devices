@@ -102,7 +102,8 @@ void setup()
 
 //	usbSerial.begin(USB_BAUD_RATE);
 
-	xbee.begin(XBEE_BAUD_RATE);
+	Serial.begin(XBEE_BAUD_RATE);
+	xbee.begin(Serial);
 
 	digitalWrite(PIN_LED, LOW);
     easyvr.playSound(2, EasyVR::VOL_DOUBLE);

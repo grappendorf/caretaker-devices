@@ -237,7 +237,8 @@ void setup()
 	digitalWrite(PIN_KEY, HIGH);
 	configureINT0();
 	configureTimer1();
-	xbee.begin(XBEE_BAUD_RATE);
+	Serial.begin(XBEE_BAUD_RATE);
+	xbee.begin(Serial);
 	wdt_enable(WDTO_2S);
 }
 

@@ -26,7 +26,7 @@
 							<tool id="de.innot.avreclipse.tool.assembler.winavr.app.release.1906151968" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.app.release">
 								<option id="de.innot.avreclipse.assembler.option.debug.level.79369531" name="Generate Debugging Info" superClass="de.innot.avreclipse.assembler.option.debug.level" value="de.innot.avreclipse.assembler.option.debug.level.none" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.asm.option.include.paths.1701416194" name="#include paths for preprocessor(-I)" superClass="de.innot.avreclipse.asm.option.include.paths" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-eclipse}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-framework}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/coyoho-device-base}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.tool.assembler.input.1716875115" superClass="de.innot.avreclipse.tool.assembler.input"/>
@@ -35,7 +35,7 @@
 								<option id="de.innot.avreclipse.compiler.option.debug.level.1478840315" name="Generate Debugging Info" superClass="de.innot.avreclipse.compiler.option.debug.level" value="de.innot.avreclipse.compiler.option.debug.level.none" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.compiler.option.optimize.600813774" name="Optimization Level" superClass="de.innot.avreclipse.compiler.option.optimize" value="de.innot.avreclipse.compiler.optimize.size" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.compiler.option.incpath.1447594925" name="Include Paths (-I)" superClass="de.innot.avreclipse.compiler.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-eclipse}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-framework}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/coyoho-device-base}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.compiler.winavr.input.1742063941" name="C Source Files" superClass="de.innot.avreclipse.compiler.winavr.input"/>
@@ -44,7 +44,7 @@
 								<option id="de.innot.avreclipse.cppcompiler.option.debug.level.531725773" name="Generate Debugging Info" superClass="de.innot.avreclipse.cppcompiler.option.debug.level" value="de.innot.avreclipse.cppcompiler.option.debug.level.none" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.cppcompiler.option.optimize.1539692314" name="Optimization Level" superClass="de.innot.avreclipse.cppcompiler.option.optimize" value="de.innot.avreclipse.cppcompiler.optimize.size" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.cppcompiler.option.incpath.446260436" name="Include Paths (-I)" superClass="de.innot.avreclipse.cppcompiler.option.incpath" valueType="includePath">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-eclipse}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-framework}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/coyoho-device-base}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.cppcompiler.input.1634064476" superClass="de.innot.avreclipse.cppcompiler.input"/>
@@ -53,7 +53,7 @@
 							<tool id="de.innot.avreclipse.tool.cpplinker.app.release.1763721261" name="AVR C++ Linker" superClass="de.innot.avreclipse.tool.cpplinker.app.release">
 								<option id="de.innot.avreclipse.cpplinker.option.otherlinkargs.743417759" name="Other Arguments" superClass="de.innot.avreclipse.cpplinker.option.otherlinkargs" value="-Wl,--gc-sections" valueType="string"/>
 								<option id="de.innot.avreclipse.cpplinker.option.libpath.2004035763" name="Libraries Path (-L)" superClass="de.innot.avreclipse.cpplinker.option.libpath" valueType="stringList">
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-eclipse}/${AVRTARGETMCU}_${AVRTARGETFCPU}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-framework}/${AVRTARGETMCU}_${AVRTARGETFCPU}&quot;"/>
 								</option>
 								<option id="de.innot.avreclipse.cpplinker.option.libs.1535911265" name="Libraries (-l)" superClass="de.innot.avreclipse.cpplinker.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="arduino"/>

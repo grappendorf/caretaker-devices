@@ -284,7 +284,8 @@ void setup()
 	azimuthServo.write(azimuthDefault);
 	altitudeServo.write(altitudeDefault);
 	temperature.begin();
-	xbee.begin(XBEE_BAUD_RATE);
+	Serial.begin(XBEE_BAUD_RATE);
+	xbee.begin(Serial);
 	blinkStatusLight();
 	wdt_enable(WDTO_2S);
 }

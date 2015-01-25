@@ -284,7 +284,7 @@ void checkLowBattery()
 void notifyListeners(uint8_t button, uint8_t buttonState)
 {
 	uint8_t message[] = { COYOHO_SWITCH_READ | COYOHO_MESSAGE_NOTIFY, button,
-			buttonState == BUTTON_PRESSED ? 1 : 0 };
+			(uint8_t) (buttonState == BUTTON_PRESSED ? 1 : 0) };
 	listenerManager.notifyListeners(message, sizeof(message));
 }
 
@@ -452,7 +452,8 @@ void setup()
 		pinMode(buttons[i], INPUT);
 		PCattachInterrupt(buttons[i], buttonPressed, RISING);
 	}
-	xbee.begin(XBEE_BAUD_RATE);
+	Serial.begin(XBEE_BAUD_RATE);
+	xbee.begin(Serial);
 	set_sleep_mode(SLEEP_MODE_PWR_DOWN);
 	power_adc_disable ();
 	power_spi_disable ();

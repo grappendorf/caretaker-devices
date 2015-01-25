@@ -207,7 +207,8 @@ void setup()
 	pinMode(PIN_LED_BLUE, OUTPUT);
 	pinMode(PIN_BUTTON, INPUT);
 	digitalWrite(PIN_BUTTON, HIGH);
-	xbee.begin(XBEE_BAUD_RATE);
+	Serial.begin(XBEE_BAUD_RATE);
+	xbee.begin(Serial);
 	wdt_enable(WDTO_2S);
 }
 

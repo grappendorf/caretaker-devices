@@ -98,7 +98,7 @@ void notifyListeners(uint8_t changedSwitchNum)
 {
 	uint8_t switchPin = switchPins[changedSwitchNum];
 	uint8_t message[] = { COYOHO_SWITCH_READ | COYOHO_MESSAGE_NOTIFY, changedSwitchNum,
-			digitalRead(switchPin) == HIGH ? 1 : 0 };
+			(uint8_t) (digitalRead(switchPin) == HIGH ? 1 : 0) };
 	listenerManager.notifyListeners(message, sizeof(message));
 }
 
@@ -216,7 +216,8 @@ void setup()
 	{
 		pinMode(switchPins[i], OUTPUT);
 	}
-	xbee.begin(XBEE_BAUD_RATE);
+	Serial.begin(XBEE_BAUD_RATE);
+	xbee.begin(Serial);
 	pinMode(PIN_BUZZER, OUTPUT);
 	beep(BEEP_DURATION_LONG);
 	wdt_enable(WDTO_2S);

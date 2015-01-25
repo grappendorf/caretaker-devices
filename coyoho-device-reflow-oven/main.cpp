@@ -369,7 +369,8 @@ void setup()
 	lcd.createChar(SYM_FAN, fanSymbol);
 
 #ifdef COYOHO
-	xbee.begin(XBEE_BAUD_RATE);
+	Serial.begin(XBEE_BAUD_RATE);
+	xbee.begin(Serial);
 #endif
 
 	pid.SetOutputLimits(0, windowSize);
@@ -685,7 +686,7 @@ void notifyTemperatureToListeners()
 {
 	uint16_t temp16 = temp;
 	uint8_t tempMessage[] = { COYOHO_SENSOR_TEMPERATURE | COYOHO_MESSAGE_NOTIFY,
-			0, temp16 >> 8, temp16 & 255 };
+			0, (uint8_t) (temp16 >> 8), (uint8_t) (temp16 & 255) };
 	listenerManager.notifyListeners(tempMessage, sizeof(tempMessage));
 }
 
@@ -695,7 +696,7 @@ void notifyTemperatureToListeners()
 void notifyStatusToListeners()
 {
 	uint8_t statusMessage[] = { COYOHO_REFLOW_OVEN_STATUS | COYOHO_MESSAGE_NOTIFY,
-			mode, state, digitalRead(RELAY), digitalRead(FAN) };
+			mode, state, (uint8_t) digitalRead(RELAY), (uint8_t) digitalRead(FAN) };
 	listenerManager.notifyListeners(statusMessage, sizeof(statusMessage));
 }
 
