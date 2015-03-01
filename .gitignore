@@ -1,13 +1,17 @@
 # Generated content
-build/
 coyoho-android/bin/
 coyoho-android/gen/
 coyoho-server/coverage/
 coyoho-server/log/
 *.s#?
 *.b#?
-eagle.epf
 log/*.log
+**/*.[oda]
+**/*.lss
+**/*.eep
+**/*.elf
+**/*.hex
+**/*.map
 
 # IntelliJ
 atlassian-ide-plugin.xml
