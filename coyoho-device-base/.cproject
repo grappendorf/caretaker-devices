@@ -51,9 +51,6 @@
 			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
 	</storageModule>
-	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-		<project id="net.grappendorf.coyoho.framework.arduino.null.289931686" name="net.grappendorf.coyoho.framework.arduino"/>
-	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="build">
 			<resource resourceType="PROJECT" workspacePath="/net.grappendorf.coyoho.framework.arduino"/>
@@ -67,4 +64,7 @@
 		</scannerConfigBuildInfo>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="cdtBuildSystem" version="4.0.0">
+		<project id="coyoho-device-base.null.1194832084" name="coyoho-device-base"/>
+	</storageModule>
 </cproject>

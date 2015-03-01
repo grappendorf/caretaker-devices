@@ -3,7 +3,6 @@
 	<name>coyoho-device-base</name>
 	<comment></comment>
 	<projects>
-		<project>net.grappendorf.arduino.framework</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
