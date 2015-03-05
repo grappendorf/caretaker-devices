@@ -22,12 +22,12 @@
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.size.app.release.488526783" name="Print Size" superClass="de.innot.avreclipse.toolchain.options.toolchain.size.app.release"/>
 							<option id="de.innot.avreclipse.toolchain.options.toolchain.avrdude.app.release.1536958411" name="AVRDude" superClass="de.innot.avreclipse.toolchain.options.toolchain.avrdude.app.release"/>
 							<targetPlatform id="de.innot.avreclipse.targetplatform.winavr.app.release.648594824" name="AVR Cross-Target" superClass="de.innot.avreclipse.targetplatform.winavr.app.release"/>
-							<builder buildPath="${workspace_loc:/coyoho-device-remotecontrol/target}" id="de.innot.avreclipse.target.builder.winavr.app.release.1400217606" keepEnvironmentInBuildfile="false" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.app.release"/>
+							<builder buildPath="${workspace_loc:/caretaker-device-remotecontrol/target}" id="de.innot.avreclipse.target.builder.winavr.app.release.1400217606" keepEnvironmentInBuildfile="false" name="AVR GNU Make Builder" superClass="de.innot.avreclipse.target.builder.winavr.app.release"/>
 							<tool id="de.innot.avreclipse.tool.assembler.winavr.app.release.1906151968" name="AVR Assembler" superClass="de.innot.avreclipse.tool.assembler.winavr.app.release">
 								<option id="de.innot.avreclipse.assembler.option.debug.level.79369531" name="Generate Debugging Info" superClass="de.innot.avreclipse.assembler.option.debug.level" value="de.innot.avreclipse.assembler.option.debug.level.none" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.asm.option.include.paths.1701416194" name="#include paths for preprocessor(-I)" superClass="de.innot.avreclipse.asm.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-framework}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/coyoho-device-base}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/caretaker-device-base}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.tool.assembler.input.1716875115" superClass="de.innot.avreclipse.tool.assembler.input"/>
 							</tool>
@@ -36,7 +36,7 @@
 								<option id="de.innot.avreclipse.compiler.option.optimize.600813774" name="Optimization Level" superClass="de.innot.avreclipse.compiler.option.optimize" value="de.innot.avreclipse.compiler.optimize.size" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.compiler.option.incpath.1447594925" name="Include Paths (-I)" superClass="de.innot.avreclipse.compiler.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-framework}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/coyoho-device-base}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/caretaker-device-base}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.compiler.winavr.input.1742063941" name="C Source Files" superClass="de.innot.avreclipse.compiler.winavr.input"/>
 							</tool>
@@ -45,7 +45,7 @@
 								<option id="de.innot.avreclipse.cppcompiler.option.optimize.1539692314" name="Optimization Level" superClass="de.innot.avreclipse.cppcompiler.option.optimize" value="de.innot.avreclipse.cppcompiler.optimize.size" valueType="enumerated"/>
 								<option id="de.innot.avreclipse.cppcompiler.option.incpath.446260436" name="Include Paths (-I)" superClass="de.innot.avreclipse.cppcompiler.option.incpath" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/arduino-framework}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/coyoho-device-base}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/caretaker-device-base}&quot;"/>
 								</option>
 								<inputType id="de.innot.avreclipse.cppcompiler.input.1634064476" superClass="de.innot.avreclipse.cppcompiler.input"/>
 							</tool>
@@ -80,7 +80,7 @@
 		</cconfiguration>
 	</storageModule>
 	<storageModule moduleId="refreshScope" versionNumber="1">
-		<resource resourceType="PROJECT" workspacePath="/coyoho-device-remotecontrol"/>
+		<resource resourceType="PROJECT" workspacePath="/caretaker-device-remotecontrol"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="scannerConfiguration">
