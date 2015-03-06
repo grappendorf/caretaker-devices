@@ -56,6 +56,9 @@ void register_message_handlers() {
   device.messenger->attach(MSG_SWITCH_READ, switch_read);
 }
 
+/**
+ * Called when a MSG_SWITCH_WRITE was received.
+ */
 void switch_read() {
   device.messenger->sendCmdStart(MSG_SWITCH_STATE);
   device.messenger->sendCmdArg(0);
@@ -63,6 +66,9 @@ void switch_read() {
   device.messenger->sendCmdEnd();
 }
 
+/**
+ * Called when a MSG_SWITCH_WRITE was received.
+ */
 void switch_write() {
   device.messenger->next(); // Ignore switch number
   int mode = device.messenger->readIntArg();
