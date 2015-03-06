@@ -18,10 +18,7 @@
 
 #include <Arduino.h>
 #include <Bounce/Bounce.h>
-#include <XXBee/XXBee.h>
-#include <CoYoHoMessages.h>
-#include <CoYoHoListenerManager.h>
-#include <avr/wdt.h>
+#include <device.h>
 
 /** IO pin numbers */
 const uint8_t PIN_LED_RED = 5;
@@ -29,13 +26,7 @@ const uint8_t PIN_LED_GREEN = 6;
 const uint8_t PIN_LED_BLUE = 9;
 const uint8_t PIN_BUTTON = 7;
 
-/** XBee module */
-XXBee<8> xbee;
-ZBRxResponse rxResponse;
-const long XBEE_BAUD_RATE = 57600;
-
-/** Listeners */
-ListenerManager<4> listenerManager(& xbee);
+DeviceDescriptor device;
 
 /** Top switch button */
 Bounce button(PIN_BUTTON, 10);
@@ -45,184 +36,131 @@ uint8_t red = 0;
 uint8_t green = 0;
 uint8_t blue = 0;
 
-/**
- * Notify all registered listeners about the current RGB values.
- */
-void notifyListeners()
-{
-	uint8_t rgbNum = 0;
-	uint8_t message[] = { COYOHO_RGB_READ | COYOHO_MESSAGE_NOTIFY, rgbNum,
-			red, green, blue };
-	listenerManager.notifyListeners(message, sizeof(message));
-}
-
-/**
- * Set the RGB values.
- */
-void rgb(uint8_t r, uint8_t g, uint8_t b)
-{
-	red = r;
-	green = g;
-	blue = b;
-	analogWrite(PIN_LED_RED, red);
-	analogWrite(PIN_LED_GREEN, green);
-	analogWrite(PIN_LED_BLUE, blue);
-	notifyListeners();
-}
-
-/**
- * Toggle between on (white) and off.
- */
-void toggle()
-{
-	if (red > 0 || green > 0 || blue > 0)
-	{
-		rgb(0, 0, 0);
-	}
-	else
-	{
-		rgb(255, 255, 255);
-	}
-}
-
-/**
- * Process all received XBee messages.
- */
-void processXBeeMessages()
-{
-	xbee.readPacket();
-	if (xbee.getResponse().isAvailable())
-	{
-		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE)
-		{
-			xbee.getResponse().getZBRxResponse(rxResponse);
-			xbee.resetData(rxResponse.getData(), rxResponse.getDataLength());
-			while (xbee.dataAvailable())
-			{
-				uint8_t command = xbee.getData();
-
-				if (listenerManager.processXBeeMessage(command, xbee, rxResponse))
-				{
-					continue;
-				}
-
-				switch (command)
-				{
-					case COYOHO_RESET:
-						for (;;)
-						{
-						}
-						break;
-
-					case COYOHO_RGB_WRITE:
-						if (xbee.dataAvailable(2))
-						{
-							uint8_t rgbNum = xbee.getData();
-							uint8_t mode = xbee.getData();
-							if (rgbNum != 0)
-							{
-								break;
-							}
-							switch (mode)
-							{
-								case COYOHO_WRITE_ABSOLUTE:
-									if (xbee.dataAvailable(3))
-									{
-										rgb(xbee.getData(), xbee.getData(), xbee.getData());
-									}
-									break;
-								case COYOHO_WRITE_INCREMENT:
-									if (xbee.dataAvailable(3))
-									{
-										rgb(red + xbee.getData(), green + xbee.getData(), blue + xbee.getData());
-									}
-									break;
-								case COYOHO_WRITE_INCREMENT_DEFAULT:
-									rgb(red + 32, green + 32, blue + 32);
-									break;
-								case COYOHO_WRITE_DECREMENT:
-									if (xbee.dataAvailable(3))
-									{
-										rgb(red - xbee.getData(), green - xbee.getData(), blue - xbee.getData());
-									}
-									break;
-								case COYOHO_WRITE_DECREMENT_DEFAULT:
-									rgb(red + 32, green + 32, blue + 32);
-									break;
-								case COYOHO_WRITE_TOGGLE:
-									toggle();
-									break;
-								case COYOHO_WRITE_DEFAULT:
-								default:
-									rgb(0, 0, 0);
-									break;
-							}
-						}
-						break;
-
-					case COYOHO_RGB_READ:
-						if (xbee.dataAvailable(1))
-						{
-							uint8_t rgbNum = xbee.getData();
-							if (rgbNum != 0)
-							{
-								break;
-							}
-							xbee.resetPayload();
-							xbee.putPayload(COYOHO_RGB_READ | COYOHO_MESSAGE_RESPONSE);
-							xbee.putPayload(rgbNum);
-							xbee.putPayload(red);
-							xbee.putPayload(green);
-							xbee.putPayload(blue);
-							ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
-									xbee.payloadLenght());
-							txRequest.setAddress16(rxResponse.getRemoteAddress16());
-							xbee.send(txRequest);
-						}
-						break;
-
-					case COYOHO_DUMP:
-						xbee.resetPayload();
-						xbee.putPayload(COYOHO_DUMP | COYOHO_MESSAGE_RESPONSE);
-						xbee.putPayload(COYOHO_DUMP_VERSION);
-						xbee.putPayload(COYOHO_VERSION);
-						ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
-								xbee.payloadLenght());
-						txRequest.setAddress16(rxResponse.getRemoteAddress16());
-						xbee.send(txRequest);
-						break;
-				}
-			}
-		}
-	}
-}
+void register_message_handlers();
+void rgb(uint8_t r, uint8_t g, uint8_t b);
+void toggle();
+void rgb_write();
+void rgb_read();
 
 /**
  * Main system setup.
  */
-void setup()
-{
-	pinMode(PIN_LED_RED, OUTPUT);
-	pinMode(PIN_LED_GREEN, OUTPUT);
-	pinMode(PIN_LED_BLUE, OUTPUT);
-	pinMode(PIN_BUTTON, INPUT);
-	digitalWrite(PIN_BUTTON, HIGH);
-	Serial.begin(XBEE_BAUD_RATE);
-	xbee.begin(Serial);
-	wdt_enable(WDTO_2S);
+void setup() {
+  pinMode(PIN_LED_RED, OUTPUT);
+  pinMode(PIN_LED_GREEN, OUTPUT);
+  pinMode(PIN_LED_BLUE, OUTPUT);
+  pinMode(PIN_BUTTON, INPUT);
+  digitalWrite(PIN_LED_RED, LOW);
+  digitalWrite(PIN_LED_GREEN, LOW);
+  digitalWrite(PIN_LED_BLUE, LOW);
+  digitalWrite(PIN_BUTTON, HIGH);
+  device.type = "DimmerRgb";
+  device.description = "RGB Dimmer";
+  device.led_pin = PIN_LED_RED;
+  device.button_pin = PIN_BUTTON;
+  device.register_message_handlers = register_message_handlers;
+  device_init(device);
 }
 
 /**
  * Main system loop.
  */
-void loop()
-{
-	wdt_reset();
-	listenerManager.checkListenerLeases();
-	processXBeeMessages();
-	button.update();
-	if (button.fallingEdge())
-	{
-		toggle();
-	}
+void loop() {
+  device_update();
+
+  if (device_is_operational()) {
+    button.update();
+    if (button.fallingEdge()) {
+      toggle();
+    }
+  }
+}
+
+/**
+ * Register device specific message handlers.
+ */
+void register_message_handlers() {
+  device.messenger->attach(MSG_RGB_WRITE, rgb_write);
+  device.messenger->attach(MSG_RGB_READ, rgb_read);
+}
+
+/**
+ * Set the RGB values.
+ */
+void rgb(uint8_t r, uint8_t g, uint8_t b) {
+  red = r;
+  green = g;
+  blue = b;
+  analogWrite(PIN_LED_RED, red);
+  analogWrite(PIN_LED_GREEN, green);
+  analogWrite(PIN_LED_BLUE, blue);
+  rgb_read();
+}
+
+/**
+ * Toggle between on (white) and off.
+ */
+void toggle() {
+  if (red > 0 || green > 0 || blue > 0) {
+    rgb(0, 0, 0);
+  } else {
+    rgb(255, 255, 255);
+  }
+}
+
+/**
+ * Called when a MSG_RGB_WRITE was received.
+ */
+void rgb_write() {
+  device.messenger->next(); // Ignore rgb number
+  int mode = device.messenger->readIntArg();
+  switch (mode) {
+    case WRITE_DEFAULT:
+      rgb(0, 0, 0);
+      break;
+    case WRITE_ABSOLUTE: {
+      int red = device.messenger->readIntArg();
+      int green = device.messenger->readIntArg();
+      int blue = device.messenger->readIntArg();
+      rgb(red, green, blue);
+      break;
+    }
+    case WRITE_INCREMENT: {
+      int red = device.messenger->readIntArg();
+      int green = device.messenger->readIntArg();
+      int blue = device.messenger->readIntArg();
+      rgb(red, green, blue);
+      break;
+    }
+    case WRITE_INCREMENT_DEFAULT:
+      rgb(red + 32, green + 32, blue + 32);
+      break;
+    case WRITE_DECREMENT: {
+      int red = device.messenger->readIntArg();
+      int green = device.messenger->readIntArg();
+      int blue = device.messenger->readIntArg();
+      rgb(red, green, blue);
+      break;
+    }
+    case WRITE_DECREMENT_DEFAULT:
+      rgb(red + 32, green + 32, blue + 32);
+      break;
+    case WRITE_TOGGLE:
+      toggle();
+      break;
+    default:
+      break;
+  }
+}
+
+/**
+ * Called when a MSG_RGB_READ was received.
+ */
+void rgb_read() {
+  device.messenger->sendCmdStart(MSG_RGB_STATE);
+  device.messenger->sendCmdArg(0);
+  device.messenger->sendCmdArg(red);
+  device.messenger->sendCmdArg(green);
+  device.messenger->sendCmdArg(blue);
+  device.messenger->sendCmdEnd();
 }
