@@ -54,8 +54,8 @@ static char server_address[SERVER_ADDRESS_LEN + 1];
 static unsigned long blink_millis;
 static int blink_index;
 static int new_device_blink_pattern[] = { 1500, 100, 0 };
-static int discovered_blink_pattern[] = { 250, 250, 0 };
-static int factoryreset_blink_pattern[] = { 50, 50, 50, 50, 0 };
+static int discovered_blink_pattern[] = { 500, 500, 0 };
+static int factoryreset_blink_pattern[] = { 50, 50, 0 };
 static int* blink_pattern;
 
 #define WAIT_FOR_FACTORYRESET_TIMEOUT (3L * 1000L)
@@ -81,7 +81,7 @@ enum State {
   STATE_FACTORY_RESET
 };
 
-State state = STATE_INIT;
+static State state = STATE_INIT;
 
 void onServerRegisterResponse();
 void onPingRequest();
@@ -184,7 +184,7 @@ void device_init(DeviceDescriptor& descriptor) {
     (*device->register_message_handlers)();
   }
 
-  Serial.begin(9600);
+  Serial.begin(57600);
 }
 
 /**
@@ -269,6 +269,7 @@ void device_update() {
       DEBUG_PRINTLN_STATE(F("NEW_DEVICE"))
       activate_blink_pattern(new_device_blink_pattern);
       wifly.reset();
+      wifly.sendCommand("set u b 57600\r");
       wifly.sendCommand("get m\r", "Mac Addr=");
       wifly.receive((uint8_t *) mac, 17);
       mac[17] = '\0';
@@ -392,7 +393,7 @@ void device_update() {
 
       DEBUG_PRINTLN_STATE(F("CONNECT_WLAN"))
       wifly.reset();
-      wifly.version(buf, BUF_LEN);
+      wifly.sendCommand("set u b 57600\r");
       snprintf(buf, BUF_LEN, "set o d %s\r", device_name);
       wifly.sendCommand(buf, "OK");
       wifly.sendCommand("set i h 0.0.0.0\r", "OK"); // UDP auto pairing
@@ -427,9 +428,6 @@ void device_update() {
           snprintf(buf, BUF_LEN, "set i h %s\r", server_address);
           wifly.sendCommand(buf, "OK");
           wifly.sendCommand("set b i 0\r", "OK");
-          wifly.save();
-          wifly.reboot();
-          wifly.version(buf, BUF_LEN);
           wifly.dataMode();
           state = STATE_REGISTER_WITH_SERVER;
         }
@@ -488,4 +486,8 @@ void onServerRegisterResponse() {
 void onPingRequest() {
   DEBUG_PRINTLN(F("* PingRequest"))
   messenger.sendCmd(MSG_PING_RESPONSE);
+}
+
+bool device_is_operational() {
+  return state == STATE_OPERATIONAL;
 }

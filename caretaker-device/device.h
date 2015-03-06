@@ -25,8 +25,9 @@ typedef struct _DeviceDescriptor {
 
 void device_init(DeviceDescriptor& descriptor);
 void device_update();
+bool device_is_operational();
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 #include <SoftwareSerial/SoftwareSerial.h>
