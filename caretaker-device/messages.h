@@ -23,6 +23,9 @@
 #define MSG_RGB_WRITE           8
 #define MSG_RGB_READ            9
 #define MSG_RGB_STATE           10
+#define MSG_PWM_WRITE           11
+#define MSG_PWM_READ            12
+#define MSG_PWM_STATE           13
 
 /** Value write modes */
 
