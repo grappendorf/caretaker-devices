@@ -17528,7 +17528,7 @@ Source: http://www.diotec.com/pdf/s40.pdf</description>
 <sheet>
 <plain>
 <text x="163.83" y="31.75" size="2.54" layer="94">Dirk Grappendorf</text>
-<text x="251.46" y="7.62" size="2.54" layer="94">2</text>
+<text x="251.46" y="7.62" size="2.54" layer="94">3</text>
 <text x="163.83" y="27.94" size="2.54" layer="94">grappendorf.net</text>
 <text x="163.83" y="24.13" size="2.54" layer="94">CERN Open Hardware License 1.1</text>
 </plain>
