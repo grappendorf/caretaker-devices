@@ -1,8 +1,4 @@
 # Generated content
-coyoho-android/bin/
-coyoho-android/gen/
-coyoho-server/coverage/
-coyoho-server/log/
 *.s#?
 *.b#?
 log/*.log
