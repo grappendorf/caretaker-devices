@@ -228,10 +228,14 @@ ISR (INT0_vect) {
 void setBrightness(uint8_t val) {
   blinkLED();
   if (val == 0) {
+    cli();
     triacDelay = TRIAC_DELAY_MAX;
+    sei();
     EIMSK &= ~(1 << INT0);
   } else {
+    cli();
     triacDelay = map(val, 0, 255, TRIAC_DELAY_MAX, TRIAC_DELAY_MIN);
+    sei();
     EIMSK |= (1 << INT0);
   }
   brightness = val;
