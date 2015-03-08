@@ -60,8 +60,10 @@ static int* blink_pattern;
 
 #define WAIT_FOR_FACTORYRESET_TIMEOUT (3L * 1000L)
 #define WAIT_FOR_CONFIG_TIMEOUT (5 * 60L * 1000L)
+#define PING_INTERVAL (60 * 1000L)
 
 static unsigned long timeout_millis;
+static unsigned long next_ping_millis;
 
 enum State {
   STATE_INIT,
@@ -84,7 +86,7 @@ enum State {
 static State state = STATE_INIT;
 
 void onServerRegisterResponse();
-void onPingRequest();
+void onPing();
 
 #ifdef DEBUG
 void dump_config_values() {
@@ -179,7 +181,7 @@ void device_init(DeviceDescriptor& descriptor) {
   digitalWrite(device->button_pin, HIGH);
 
   messenger.attach(MSG_REGISTER_RESPONSE, onServerRegisterResponse);
-  messenger.attach(MSG_PING_REQUEST, onPingRequest);
+  messenger.attach(MSG_PING, onPing);
   if (device->register_message_handlers) {
     (*device->register_message_handlers)();
   }
@@ -394,8 +396,6 @@ void device_update() {
       DEBUG_PRINTLN_STATE(F("CONNECT_WLAN"))
       wifly.reset();
       wifly.sendCommand("set u b 57600\r");
-      snprintf(buf, BUF_LEN, "set o d %s\r", device_name);
-      wifly.sendCommand(buf, "OK");
       wifly.sendCommand("set i h 0.0.0.0\r", "OK"); // UDP auto pairing
       wifly.sendCommand("set i f 0x40\r", "OK"); // UDP auto pairing
       wifly.sendCommand("set i d 1\r", "OK"); // DHCP client on
@@ -407,6 +407,8 @@ void device_update() {
       snprintf(buf, BUF_LEN, "set w s %s\r", ssid);
       wifly.sendCommand(buf, "OK");
       snprintf(buf, BUF_LEN, "set w p %s\r", phrase);
+      wifly.sendCommand(buf, "OK");
+      snprintf(buf, BUF_LEN, "set o d %s\r", device_name);
       wifly.sendCommand(buf, "OK");
       wifly.save();
       wifly.reboot();
@@ -465,6 +467,10 @@ void device_update() {
       // Normal operational mode
 
       DEBUG_PRINTLN_STATE(F("OPERATIONAL"))
+      if (millis () > next_ping_millis) {
+        messenger.sendCmd(MSG_PING);
+        next_ping_millis = millis() + PING_INTERVAL;
+      }
       messenger.feedinSerialData();
       break;
   }
@@ -481,13 +487,16 @@ void onServerRegisterResponse() {
 }
 
 /**
- * This message is sent by the server to check the health of a device.
+ * Respond a server ping with a ping.
  */
-void onPingRequest() {
-  DEBUG_PRINTLN(F("* PingRequest"))
-  messenger.sendCmd(MSG_PING_RESPONSE);
+void onPing() {
+  DEBUG_PRINTLN(F("* Ping"))
+  messenger.sendCmd(MSG_PING);
 }
 
+/**
+ * Return true if the device is in STATE_OPERATIONAL.
+ */
 bool device_is_operational() {
   return state == STATE_OPERATIONAL;
 }
