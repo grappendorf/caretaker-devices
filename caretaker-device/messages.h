@@ -14,22 +14,21 @@
 #define MSG_INVALID             0
 #define MSG_REGISTER_REQUEST    1
 #define MSG_REGISTER_RESPONSE   2
-#define MSG_PING_REQUEST        3
-#define MSG_PING_RESPONSE       4
-#define MSG_SWITCH_WRITE        5
-#define MSG_SWITCH_READ         6
-#define MSG_SWITCH_STATE        7
-#define MSG_RGB_WRITE           8
-#define MSG_RGB_READ            9
-#define MSG_RGB_STATE           10
-#define MSG_PWM_WRITE           11
-#define MSG_PWM_READ            12
-#define MSG_PWM_STATE           13
-#define MSG_SENSOR_READ         14
-#define MSG_SERVO_WRITE         15
-#define MSG_SERVO_READ          16
-#define MSG_REFLOW_OVEN_CMD     17
-#define MSG_REFLOW_OVEN_READ    18
+#define MSG_PING                3
+#define MSG_SWITCH_WRITE        4
+#define MSG_SWITCH_READ         5
+#define MSG_SWITCH_STATE        6
+#define MSG_RGB_WRITE           7
+#define MSG_RGB_READ            8
+#define MSG_RGB_STATE           9
+#define MSG_PWM_WRITE           10
+#define MSG_PWM_READ            11
+#define MSG_PWM_STATE           12
+#define MSG_SENSOR_READ         13
+#define MSG_SERVO_WRITE         14
+#define MSG_SERVO_READ          15
+#define MSG_REFLOW_OVEN_CMD     16
+#define MSG_REFLOW_OVEN_READ    17
 
 /** Value write modes */
 #define WRITE_DEFAULT            0
