@@ -401,6 +401,9 @@ void device_update() {
       wifly.sendCommand("set i d 1\r", "OK"); // DHCP client on
       wifly.sendCommand("set i p 1\r", "OK"); // Use UDP
       wifly.sendCommand("set b i 7\r", "OK"); // UDP broadcast interval 8 secs
+#ifdef DEBUG
+      wifly.sendCommand("set b p 44444\r", "OK"); // Set broadcast port to 44444 when debugging
+#endif
       wifly.sendCommand("set w a 4\r", "OK");
       wifly.sendCommand("set w c 0\r", "OK");
       wifly.sendCommand("set w j 1\r", "OK");
