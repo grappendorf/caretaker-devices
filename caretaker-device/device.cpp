@@ -60,6 +60,7 @@ static int* blink_pattern;
 
 #define WAIT_FOR_FACTORYRESET_TIMEOUT (3L * 1000L)
 #define WAIT_FOR_CONFIG_TIMEOUT (5 * 60L * 1000L)
+#define WAIT_FOR_REGISTRATION_TIMEOUT (20L * 1000L)
 #define PING_INTERVAL (60 * 1000L)
 
 static unsigned long timeout_millis;
@@ -453,16 +454,20 @@ void device_update() {
         (*device->send_server_register_params)();
       }
       messenger.sendCmdEnd();
+      timeout_millis = millis() + WAIT_FOR_REGISTRATION_TIMEOUT;
       state = STATE_WAIT_FOR_REGISTER_WITH_SERVER_RESPONSE;
       break;
 
     case STATE_WAIT_FOR_REGISTER_WITH_SERVER_RESPONSE:
       // --------------------------------------------------------------------------------
       // Wait until the server responds to our registration request
-      // TODO: After a timeout we should resend the registration request
 
       DEBUG_PRINTLN_STATE(F("WAIT_FOR_REGISTER_WITH_SERVER_RESPONSE"))
-      messenger.feedinSerialData();
+      if (millis() > timeout_millis) {
+        state = STATE_REGISTER_WITH_SERVER;
+      } else {
+        messenger.feedinSerialData();
+      }
       break;
 
     case STATE_OPERATIONAL:
