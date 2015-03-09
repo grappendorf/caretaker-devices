@@ -61,7 +61,7 @@ static int* blink_pattern;
 #define WAIT_FOR_FACTORYRESET_TIMEOUT (3L * 1000L)
 #define WAIT_FOR_CONFIG_TIMEOUT (5 * 60L * 1000L)
 #define WAIT_FOR_REGISTRATION_TIMEOUT (20L * 1000L)
-#define PING_INTERVAL (60 * 1000L)
+#define PING_INTERVAL (5 * 60 * 1000L)
 
 static unsigned long timeout_millis;
 static unsigned long next_ping_millis;
