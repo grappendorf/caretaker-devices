@@ -112,7 +112,6 @@ void toggle() {
  * Called when a MSG_RGB_WRITE was received.
  */
 void rgb_write() {
-  device.messenger->next(); // Ignore rgb number
   int mode = device.messenger->readIntArg();
   switch (mode) {
     case WRITE_DEFAULT:
@@ -158,7 +157,6 @@ void rgb_write() {
  */
 void rgb_read() {
   device.messenger->sendCmdStart(MSG_RGB_STATE);
-  device.messenger->sendCmdArg(0);
   device.messenger->sendCmdArg(red);
   device.messenger->sendCmdArg(green);
   device.messenger->sendCmdArg(blue);
