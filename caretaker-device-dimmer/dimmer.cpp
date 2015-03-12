@@ -251,7 +251,6 @@ void setBrightness(uint8_t val) {
  * Called when a MSG_PWM_WRITE was received.
  */
 void pwm_write() {
-  device.messenger->next(); // Ignore pwm number
   int mode = device.messenger->readIntArg();
   switch (mode) {
     case WRITE_DEFAULT:
@@ -291,7 +290,6 @@ void pwm_write() {
  */
 void pwm_read() {
   device.messenger->sendCmdStart(MSG_PWM_STATE);
-  device.messenger->sendCmdArg(0);
   device.messenger->sendCmdArg(brightness);
   device.messenger->sendCmdEnd();
 }
