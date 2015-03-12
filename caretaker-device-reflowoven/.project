@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>coyoho-device-reflow-oven</name>
+	<name>caretaker-device-reflowoven</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -31,7 +31,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildLocation</key>
-					<value>${workspace_loc:/coyoho-device-reflow-oven/build}</value>
+					<value>${workspace_loc:/caretaker-device-reflowoven/build}</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.cleanBuildTarget</key>

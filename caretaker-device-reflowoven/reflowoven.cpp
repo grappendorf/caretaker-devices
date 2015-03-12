@@ -1,4 +1,13 @@
 /**
+ * This file is part of the Caretaker Home Automation System
+ *
+ * Copyright 2011-2015 Dirk Grappendorf, www.grappendorf.net
+ *
+ * Licensed under the the MIT License
+ * You find a copy of license in the root directory of this project
+ */
+
+/**
  * Firmware for the Reflow Oven Controller
  *
  * Based on code from Stanislav Yanov,
@@ -42,18 +51,17 @@
  */
 
 /**
- * If you don't want to compile in support for CoYoHo, comment out the following line
+ * If you don't want to compile in support for Caretaker, comment out the following line
  */
-#define COYOHO 1
+#define CARETAKER
 
 #include <Arduino.h>
 #include <LiquidCrystal/LiquidCrystal.h>
 #include <Bounce/Bounce.h>
 #include <PID/PID.h>
 #include <Adafruit_MAX31855/Adafruit_MAX31855.h>
-#ifdef COYOHO
-#include <CoYoHoMessages.h>
-#include <CoYoHoListenerManager.h>
+#ifdef CARETAKER
+#include <device.h>
 #endif
 
 // IO pins
@@ -194,13 +202,10 @@ unsigned int elapsedSeconds = 0;
 
 unsigned long nextElapsedSecondsUpdate = 0;
 
-// CoYoHo
+// Coa
 
-#ifdef COYOHO
+#ifdef CARETAKER
 const long XBEE_BAUD_RATE = 57600;
-XXBee<8> xbee;
-ListenerManager<4> listenerManager(&xbee);
-ZBRxResponse rxResponse;
 unsigned long nextNotifyListeners = 0;
 #endif
 
@@ -219,7 +224,7 @@ void modeManual();
 void modeReflow();
 void loop();
 
-#ifdef COYOHO
+#ifdef CARETAKER
 void notifyTemperatureToListeners();
 void notifyStatusToListeners();
 void processXBeeMessages();
@@ -231,11 +236,11 @@ void processXBeeMessages();
  */
 void heater(boolean on)
 {
-#ifdef COYOHO
+#ifdef CARETAKER
 	boolean oldOn = digitalRead(RELAY) == HIGH;
 #endif
 	digitalWrite(RELAY, on ? HIGH : LOW);
-#ifdef COYOHO
+#ifdef CARETAKER
 	if (on != oldOn) {
 		notifyStatusToListeners();
 	}
@@ -248,11 +253,11 @@ void heater(boolean on)
  */
 void fan(boolean on)
 {
-#ifdef COYOHO
+#ifdef CARETAKER
 	boolean oldOn = digitalRead(FAN) == HIGH;
 #endif
 	digitalWrite(FAN, on ? HIGH : LOW);
-#ifdef COYOHO
+#ifdef CARETAKER
 	if (on != oldOn) {
 		notifyStatusToListeners();
 	}
@@ -368,9 +373,7 @@ void setup()
 	lcd.createChar(SYM_HEATER, heaterSymbol);
 	lcd.createChar(SYM_FAN, fanSymbol);
 
-#ifdef COYOHO
-	Serial.begin(XBEE_BAUD_RATE);
-	xbee.begin(Serial);
+#ifdef CARETAKER
 #endif
 
 	pid.SetOutputLimits(0, windowSize);
@@ -388,13 +391,13 @@ void setup()
  */
 void enterMode(Mode newMode, State newState)
 {
-#ifdef COYOHO
+#ifdef CARETAKER
 	Mode oldMode = mode;
 	State oldState = state;
 #endif
 	mode = newMode;
 	state = newState;
-#ifdef COYOHO
+#ifdef CARETAKER
 	if (newMode != oldMode || newState != oldState) {
 		notifyStatusToListeners();
 	}
@@ -407,11 +410,11 @@ void enterMode(Mode newMode, State newState)
  */
 void enterState(State newState)
 {
-#ifdef COYOHO
+#ifdef CARETAKER
 	State oldState = state;
 #endif
 	state = newState;
-#ifdef COYOHO
+#ifdef CARETAKER
 	if (newState != oldState) {
 		notifyStatusToListeners();
 	}
@@ -620,13 +623,8 @@ void modeReflow()
  */
 void loop()
 {
-#ifdef COYOHO
-	listenerManager.checkListenerLeases();
-	processXBeeMessages();
-	if (millis() > nextNotifyListeners) {
-		notifyTemperatureToListeners();
-		nextNotifyListeners = millis() + 1000;
-	}
+#ifdef CARETAKER
+  device_update();
 #endif
 
 	buttonRed.update();
@@ -677,97 +675,97 @@ void loop()
 	}
 }
 
-#ifdef COYOHO
+#ifdef CARETAKER
 
 /**
- * Notify any CoYoHo listeners about the current temperature.
+ * Notify the Caretaker server about the current temperature.
  */
 void notifyTemperatureToListeners()
 {
-	uint16_t temp16 = temp;
-	uint8_t tempMessage[] = { COYOHO_SENSOR_TEMPERATURE | COYOHO_MESSAGE_NOTIFY,
-			0, (uint8_t) (temp16 >> 8), (uint8_t) (temp16 & 255) };
-	listenerManager.notifyListeners(tempMessage, sizeof(tempMessage));
+//	uint16_t temp16 = temp;
+//	uint8_t tempMessage[] = { COYOHO_SENSOR_TEMPERATURE | COYOHO_MESSAGE_NOTIFY,
+//			0, (uint8_t) (temp16 >> 8), (uint8_t) (temp16 & 255) };
+//	listenerManager.notifyListeners(tempMessage, sizeof(tempMessage));
 }
 
 /**
- * Notify any CoYoHo listeners about a mode or state change.
+ * Notify the Caretaker server about a mode or state change.
  */
 void notifyStatusToListeners()
 {
-	uint8_t statusMessage[] = { COYOHO_REFLOW_OVEN_STATUS | COYOHO_MESSAGE_NOTIFY,
-			mode, state, (uint8_t) digitalRead(RELAY), (uint8_t) digitalRead(FAN) };
-	listenerManager.notifyListeners(statusMessage, sizeof(statusMessage));
+//	uint8_t statusMessage[] = { COYOHO_REFLOW_OVEN_STATUS | COYOHO_MESSAGE_NOTIFY,
+//			mode, state, (uint8_t) digitalRead(RELAY), (uint8_t) digitalRead(FAN) };
+//	listenerManager.notifyListeners(statusMessage, sizeof(statusMessage));
 }
 
-/**
- * Process XBee messages.
- */
-void processXBeeMessages()
-{
-	xbee.readPacket();
-	if (xbee.getResponse().isAvailable()) {
-		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE) {
-			xbee.getResponse().getZBRxResponse(rxResponse);
-			xbee.resetData(rxResponse.getData(), rxResponse.getDataLength());
-			while (xbee.dataAvailable()) {
-				uint8_t command = xbee.getData();
-
-				if (listenerManager.processXBeeMessage(command, xbee, rxResponse)) {
-					continue;
-				}
-
-				switch (command) {
-					case COYOHO_REFLOW_OVEN_ACTION:
-						if (xbee.dataAvailable()) {
-							uint8_t ovenCommand = xbee.getData();
-							switch (ovenCommand) {
-								case COYOHO_REFLOW_OVEN_OFF:
-									enterMode(MODE_OFF, STATE_IDLE);
-									break;
-
-								case COYOHO_REFLOW_OVEN_START:
-									enterMode(MODE_REFLOW, STATE_PRECOOL);
-									break;
-
-								case COYOHO_REFLOW_OVEN_COOL:
-									enterMode(MODE_COOL, STATE_IDLE);
-									break;
-							}
-						}
-						break;
-
-					case COYOHO_SENSOR_READ:
-						if (xbee.dataAvailable(1))
-						{
-							uint8_t sensorNum = xbee.getData();
-							xbee.resetPayload();
-							xbee.putPayload(COYOHO_SENSOR_READ | COYOHO_MESSAGE_RESPONSE);
-							xbee.putPayload(sensorNum);
-							xbee.putPayload(temp);
-							ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
-									xbee.payloadLenght());
-							txRequest.setAddress16(rxResponse.getRemoteAddress16());
-							xbee.send(txRequest);
-						}
-						break;
-
-					case COYOHO_REFLOW_OVEN_STATUS:
-						xbee.resetPayload();
-						xbee.putPayload(COYOHO_REFLOW_OVEN_STATUS | COYOHO_MESSAGE_RESPONSE);
-						xbee.putPayload(mode);
-						xbee.putPayload(state);
-						xbee.putPayload(digitalRead(RELAY));
-						xbee.putPayload(digitalRead(FAN));
-						ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
-								xbee.payloadLenght());
-						txRequest.setAddress16(rxResponse.getRemoteAddress16());
-						xbee.send(txRequest);
-						break;
-				}
-			}
-		}
-	}
-}
+///**
+// * Process XBee messages.
+// */
+//void processXBeeMessages()
+//{
+//	xbee.readPacket();
+//	if (xbee.getResponse().isAvailable()) {
+//		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE) {
+//			xbee.getResponse().getZBRxResponse(rxResponse);
+//			xbee.resetData(rxResponse.getData(), rxResponse.getDataLength());
+//			while (xbee.dataAvailable()) {
+//				uint8_t command = xbee.getData();
+//
+//				if (listenerManager.processXBeeMessage(command, xbee, rxResponse)) {
+//					continue;
+//				}
+//
+//				switch (command) {
+//					case COYOHO_REFLOW_OVEN_ACTION:
+//						if (xbee.dataAvailable()) {
+//							uint8_t ovenCommand = xbee.getData();
+//							switch (ovenCommand) {
+//								case COYOHO_REFLOW_OVEN_OFF:
+//									enterMode(MODE_OFF, STATE_IDLE);
+//									break;
+//
+//								case COYOHO_REFLOW_OVEN_START:
+//									enterMode(MODE_REFLOW, STATE_PRECOOL);
+//									break;
+//
+//								case COYOHO_REFLOW_OVEN_COOL:
+//									enterMode(MODE_COOL, STATE_IDLE);
+//									break;
+//							}
+//						}
+//						break;
+//
+//					case COYOHO_SENSOR_READ:
+//						if (xbee.dataAvailable(1))
+//						{
+//							uint8_t sensorNum = xbee.getData();
+//							xbee.resetPayload();
+//							xbee.putPayload(COYOHO_SENSOR_READ | COYOHO_MESSAGE_RESPONSE);
+//							xbee.putPayload(sensorNum);
+//							xbee.putPayload(temp);
+//							ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
+//									xbee.payloadLenght());
+//							txRequest.setAddress16(rxResponse.getRemoteAddress16());
+//							xbee.send(txRequest);
+//						}
+//						break;
+//
+//					case COYOHO_REFLOW_OVEN_STATUS:
+//						xbee.resetPayload();
+//						xbee.putPayload(COYOHO_REFLOW_OVEN_STATUS | COYOHO_MESSAGE_RESPONSE);
+//						xbee.putPayload(mode);
+//						xbee.putPayload(state);
+//						xbee.putPayload(digitalRead(RELAY));
+//						xbee.putPayload(digitalRead(FAN));
+//						ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
+//								xbee.payloadLenght());
+//						txRequest.setAddress16(rxResponse.getRemoteAddress16());
+//						xbee.send(txRequest);
+//						break;
+//				}
+//			}
+//		}
+//	}
+//}
 
 #endif

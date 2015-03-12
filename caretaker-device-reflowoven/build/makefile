@@ -12,32 +12,32 @@ RM := rm -rf
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(strip $(C++_DEPS)),)
--include $(C++_DEPS)
-endif
-ifneq ($(strip $(C_DEPS)),)
--include $(C_DEPS)
-endif
-ifneq ($(strip $(ASM_DEPS)),)
--include $(ASM_DEPS)
-endif
 ifneq ($(strip $(CC_DEPS)),)
 -include $(CC_DEPS)
 endif
-ifneq ($(strip $(CPP_DEPS)),)
--include $(CPP_DEPS)
-endif
-ifneq ($(strip $(S_DEPS)),)
--include $(S_DEPS)
-endif
-ifneq ($(strip $(CXX_DEPS)),)
--include $(CXX_DEPS)
+ifneq ($(strip $(C++_DEPS)),)
+-include $(C++_DEPS)
 endif
 ifneq ($(strip $(C_UPPER_DEPS)),)
 -include $(C_UPPER_DEPS)
 endif
+ifneq ($(strip $(CXX_DEPS)),)
+-include $(CXX_DEPS)
+endif
+ifneq ($(strip $(ASM_DEPS)),)
+-include $(ASM_DEPS)
+endif
+ifneq ($(strip $(S_DEPS)),)
+-include $(S_DEPS)
+endif
 ifneq ($(strip $(S_UPPER_DEPS)),)
 -include $(S_UPPER_DEPS)
+endif
+ifneq ($(strip $(C_DEPS)),)
+-include $(C_DEPS)
+endif
+ifneq ($(strip $(CPP_DEPS)),)
+-include $(CPP_DEPS)
 endif
 endif
 
@@ -45,56 +45,56 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 LSS += \
-reflow-oven-arduino.lss \
+reflowoven.lss \
 
 FLASH_IMAGE += \
-reflow-oven-arduino.hex \
+reflowoven.hex \
 
 EEPROM_IMAGE += \
-reflow-oven-arduino.eep \
+reflowoven.eep \
 
 SIZEDUMMY += \
 sizedummy \
 
 
 # All Target
-all: reflow-oven-arduino.elf secondary-outputs
+all: reflowoven.elf secondary-outputs
 
 # Tool invocations
-reflow-oven-arduino.elf: $(OBJS) $(USER_OBJS)
+reflowoven.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: AVR C++ Linker'
-	avr-gcc -Wl,-Map,reflow-oven-arduino.map,--cref -mrelax -Wl,--gc-sections -Wl,--gc-sections -L"/home/grappendorf/workspace-arduino/arduino-framework/atmega328p_16000000" -mmcu=atmega328p -o "reflow-oven-arduino.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	avr-gcc -Wl,-Map,reflowoven.map,--cref -mrelax -Wl,--gc-sections -Wl,--gc-sections -L"/home/grappendorf/workspace-caretaker/caretaker-devices/caretaker-device/build" -L"/home/grappendorf/workspace-arduino/arduino-framework/atmega328p_16000000" -mmcu=atmega328p -o "reflowoven.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-reflow-oven-arduino.lss: reflow-oven-arduino.elf
+reflowoven.lss: reflowoven.elf
 	@echo 'Invoking: AVR Create Extended Listing'
-	-avr-objdump -h -S reflow-oven-arduino.elf  >"reflow-oven-arduino.lss"
+	-avr-objdump -h -S reflowoven.elf  >"reflowoven.lss"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-reflow-oven-arduino.hex: reflow-oven-arduino.elf
+reflowoven.hex: reflowoven.elf
 	@echo 'Create Flash image (ihex format)'
-	-avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex reflow-oven-arduino.elf  "reflow-oven-arduino.hex"
+	-avr-objcopy -R .eeprom -R .fuse -R .lock -R .signature -O ihex reflowoven.elf  "reflowoven.hex"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-reflow-oven-arduino.eep: reflow-oven-arduino.elf
+reflowoven.eep: reflowoven.elf
 	@echo 'Create eeprom image (ihex format)'
-	-avr-objcopy -j .eeprom --no-change-warnings --change-section-lma .eeprom=0 -O ihex reflow-oven-arduino.elf  "reflow-oven-arduino.eep"
+	-avr-objcopy -j .eeprom --no-change-warnings --change-section-lma .eeprom=0 -O ihex reflowoven.elf  "reflowoven.eep"
 	@echo 'Finished building: $@'
 	@echo ' '
 
-sizedummy: reflow-oven-arduino.elf
+sizedummy: reflowoven.elf
 	@echo 'Invoking: Print Size'
-	-avr-size --format=berkeley -t reflow-oven-arduino.elf
+	-avr-size --format=berkeley -t reflowoven.elf
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) $(OBJS)$(C_DEPS)$(EEPROM_IMAGE)$(FLASH_IMAGE)$(ELFS)$(LSS)$(S_DEPS)$(CXX_DEPS)$(S_UPPER_DEPS)$(C++_DEPS)$(ASM_DEPS)$(CC_DEPS)$(CPP_DEPS)$(C_UPPER_DEPS)$(SIZEDUMMY) reflow-oven-arduino.elf
+	-$(RM) $(C_UPPER_DEPS)$(S_DEPS)$(LSS)$(C_DEPS)$(FLASH_IMAGE)$(CC_DEPS)$(ELFS)$(C++_DEPS)$(OBJS)$(CXX_DEPS)$(ASM_DEPS)$(EEPROM_IMAGE)$(SIZEDUMMY)$(S_UPPER_DEPS)$(CPP_DEPS) reflowoven.elf
 	-@echo ' '
 
 secondary-outputs: $(LSS) $(FLASH_IMAGE) $(EEPROM_IMAGE) $(SIZEDUMMY)
