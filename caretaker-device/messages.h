@@ -25,10 +25,13 @@
 #define MSG_PWM_READ            11
 #define MSG_PWM_STATE           12
 #define MSG_SENSOR_READ         13
-#define MSG_SERVO_WRITE         14
-#define MSG_SERVO_READ          15
-#define MSG_REFLOW_OVEN_CMD     16
-#define MSG_REFLOW_OVEN_READ    17
+#define MSG_SENSOR_STATE        14
+#define MSG_SERVO_WRITE         15
+#define MSG_SERVO_READ          16
+#define MSG_SERVO_STATE         17
+#define MSG_REFLOW_OVEN_CMD     18
+#define MSG_REFLOW_OVEN_READ    19
+#define MSG_REFLOW_OVEN_STATE   20
 
 /** Value write modes */
 #define WRITE_DEFAULT            0
