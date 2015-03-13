@@ -47,16 +47,18 @@ static DeviceDescriptor* device;
 
 #define BUF_LEN 128
 static char buf[BUF_LEN + 1];
-#define MAC_LEN 17
-static char mac[MAC_LEN + 1];
 #define SERVER_ADDRESS_LEN 15
 static char server_address[SERVER_ADDRESS_LEN + 1];
 static unsigned long blink_millis;
 static int blink_index;
+static int* blink_pattern;
+#ifdef AUTO_CONFIG
+#define MAC_LEN 17
+static char mac[MAC_LEN + 1];
 static int new_device_blink_pattern[] = { 1500, 100, 0 };
 static int discovered_blink_pattern[] = { 500, 500, 0 };
 static int factoryreset_blink_pattern[] = { 50, 50, 0 };
-static int* blink_pattern;
+#endif
 
 #define WAIT_FOR_FACTORYRESET_TIMEOUT (3L * 1000L)
 #define WAIT_FOR_CONFIG_TIMEOUT (5 * 60L * 1000L)
@@ -68,6 +70,12 @@ static unsigned long next_ping_millis;
 
 enum State {
   STATE_INIT,
+  STATE_CONNECT_WLAN,
+  STATE_WAIT_FOR_BROADCAST_RESPONSE,
+  STATE_REGISTER_WITH_SERVER,
+  STATE_WAIT_FOR_REGISTER_WITH_SERVER_RESPONSE,
+  STATE_OPERATIONAL,
+#ifdef AUTO_CONFIG
   STATE_NEW_DEVICE,
   STATE_WAIT_FOR_DISCOVERY,
   STATE_SEND_INFO,
@@ -75,13 +83,9 @@ enum State {
   STATE_WAIT_FOR_CONFIG,
   STATE_CONFIGURE_DEVICE,
   STATE_CONFIG_TIMEOUT,
-  STATE_CONNECT_WLAN,
-  STATE_WAIT_FOR_BROADCAST_RESPONSE,
-  STATE_REGISTER_WITH_SERVER,
-  STATE_WAIT_FOR_REGISTER_WITH_SERVER_RESPONSE,
-  STATE_OPERATIONAL,
   STATE_FACTORY_RESET_CONFIRM,
   STATE_FACTORY_RESET
+#endif
 };
 
 static State state = STATE_INIT;
@@ -151,10 +155,12 @@ boolean wifly_readline(char* res, int max_chars) {
  */
 void activate_blink_pattern(int* _blink_pattern) {
   blink_pattern = _blink_pattern;
-  digitalWrite(device->led_pin, LOW);
-  if (blink_pattern) {
-    blink_index = 0;
-    blink_millis = millis() + blink_pattern[0];
+  if (device->led_pin > 0) {
+    digitalWrite(device->led_pin, LOW);
+    if (blink_pattern) {
+      blink_index = 0;
+      blink_millis = millis() + blink_pattern[0];
+    }
   }
 }
 
@@ -174,8 +180,10 @@ void device_init(DeviceDescriptor& descriptor) {
   device = &descriptor;
   device->messenger = & messenger;
 
-  pinMode(device->led_pin, OUTPUT);
-  digitalWrite(device->led_pin, LOW);
+  if (device->led_pin > 0) {
+    pinMode(device->led_pin, OUTPUT);
+    digitalWrite(device->led_pin, LOW);
+  }
   blink_pattern = NULL;
 
   pinMode(device->button_pin, INPUT);
@@ -196,13 +204,15 @@ void device_init(DeviceDescriptor& descriptor) {
 void device_update() {
   // Blink the LED
 
-  if (blink_pattern && millis() > blink_millis) {
-    digitalWrite(device->led_pin, digitalRead(device->led_pin) == HIGH ? LOW : HIGH);
-    ++blink_index;
-    if (blink_pattern[blink_index] == 0) {
-      blink_index = 0;
+  if (device->led_pin > 0) {
+    if (blink_pattern && millis() > blink_millis) {
+      digitalWrite(device->led_pin, digitalRead(device->led_pin) == HIGH ? LOW : HIGH);
+      ++blink_index;
+      if (blink_pattern[blink_index] == 0) {
+        blink_index = 0;
+      }
+      blink_millis = millis() + blink_pattern[blink_index];
     }
-    blink_millis = millis() + blink_pattern[blink_index];
   }
 
   // State machine
@@ -215,16 +225,22 @@ void device_update() {
 
       DEBUG_PRINTLN_STATE(F("INIT"))
 
+#ifdef AUTO_CONFIG
       if (digitalRead(device->button_pin) == LOW) {
         activate_blink_pattern(factoryreset_blink_pattern);
         timeout_millis = millis() + WAIT_FOR_FACTORYRESET_TIMEOUT;
         state = STATE_FACTORY_RESET_CONFIRM;
         break;
       }
+#endif
 
       magic = EEPROM.readInt(EEPROM_MAGIC_ADDR);
       if (magic != MAGIC_NUMBER) {
+#ifdef AUTO_CONFIG
         state = STATE_NEW_DEVICE;
+#else
+        state = STATE_INIT;
+#endif
         break;
       }
 
@@ -237,6 +253,7 @@ void device_update() {
       state = STATE_CONNECT_WLAN;
       break;
 
+#ifdef AUTO_CONFIG
     case STATE_FACTORY_RESET_CONFIRM:
       // --------------------------------------------------------------------------------
       // User must press the button WAIT_FOR_FACTORYRESET_TIMEOUT seconds
@@ -252,7 +269,9 @@ void device_update() {
         state = STATE_FACTORY_RESET;
       }
       break;
+#endif
 
+#ifdef AUTO_CONFIG
     case STATE_FACTORY_RESET:
       // --------------------------------------------------------------------------------
       // Perform a factory reset
@@ -264,7 +283,9 @@ void device_update() {
       activate_blink_pattern(NULL);
       state = STATE_INIT;
       break;
+#endif
 
+#ifdef AUTO_CONFIG
     case STATE_NEW_DEVICE:
       // --------------------------------------------------------------------------------
       // Entered if this is a new device with no stored valid EEPROM data
@@ -293,7 +314,9 @@ void device_update() {
       wifly.reboot();
       state = STATE_WAIT_FOR_DISCOVERY;
       break;
+#endif
 
+#ifdef AUTO_CONFIG
     case STATE_WAIT_FOR_DISCOVERY:
       // --------------------------------------------------------------------------------
       // Wait until the configuration app has opened a connection to this device
@@ -304,7 +327,9 @@ void device_update() {
         state = STATE_SEND_INFO;
       }
       break;
+#endif
 
+#ifdef AUTO_CONFIG
     case STATE_SEND_INFO:
       // --------------------------------------------------------------------------------
       // Send information about this device to the configuration app
@@ -316,7 +341,9 @@ void device_update() {
       wifly.println(device->description);
       state = STATE_WAIT_FOR_SEND_INFO_ACK;
       break;
+#endif
 
+#ifdef AUTO_CONFIG
     case STATE_WAIT_FOR_SEND_INFO_ACK:
       // --------------------------------------------------------------------------------
       // Wait for the receiving confirmation
@@ -327,7 +354,9 @@ void device_update() {
         state = STATE_WAIT_FOR_CONFIG;
       }
       break;
+#endif
 
+#ifdef AUTO_CONFIG
     case STATE_WAIT_FOR_CONFIG:
       // --------------------------------------------------------------------------------
       // Configuration app has WAIT_FOR_CONFIG_TIMEOUT seconds to send the configuration
@@ -339,7 +368,9 @@ void device_update() {
         state = STATE_CONFIG_TIMEOUT;
       }
       break;
+#endif
 
+#ifdef AUTO_CONFIG
     case STATE_CONFIG_TIMEOUT:
       // --------------------------------------------------------------------------------
       // No configuration received, restart discovery process
@@ -347,7 +378,9 @@ void device_update() {
       DEBUG_PRINTLN_STATE(F("CONFIG_TIMEOUT"))
       state = STATE_NEW_DEVICE;
       break;
+#endif
 
+#ifdef AUTO_CONFIG
     case STATE_CONFIGURE_DEVICE:
       // --------------------------------------------------------------------------------
       // Read and store the confifuration values
@@ -389,6 +422,7 @@ void device_update() {
       activate_blink_pattern(NULL);
       state = STATE_CONNECT_WLAN;
       break;
+#endif
 
     case STATE_CONNECT_WLAN:
       // --------------------------------------------------------------------------------
@@ -402,7 +436,7 @@ void device_update() {
       wifly.sendCommand("set i d 1\r", "OK"); // DHCP client on
       wifly.sendCommand("set i p 1\r", "OK"); // Use UDP
       wifly.sendCommand("set b i 7\r", "OK"); // UDP broadcast interval 8 secs
-#ifdef DEBUG
+#ifdef BROADCAST_PORT
       wifly.sendCommand("set b p 44444\r", "OK"); // Set broadcast port to 44444 when debugging
 #endif
       wifly.sendCommand("set w a 4\r", "OK");

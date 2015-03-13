@@ -13,6 +13,15 @@
 #ifndef _DEVICE_H
 #define _DEVICE_H
 
+// Define to set a non standard (55555) broadcast port
+//#define BROADCAST_PORT 44444
+
+// Define to enable auto configuration code
+#define AUTO_CONFIG
+
+// Define to enable debug logging
+//#define DEBUG
+
 typedef struct _DeviceDescriptor {
   const char* type;
   const char* description;
@@ -26,8 +35,6 @@ typedef struct _DeviceDescriptor {
 void device_init(DeviceDescriptor& descriptor);
 void device_update();
 bool device_is_operational();
-
-//#define DEBUG
 
 #ifdef DEBUG
 #include <SoftwareSerial/SoftwareSerial.h>
