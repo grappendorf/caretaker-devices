@@ -542,3 +542,7 @@ void onPing() {
 bool device_is_operational() {
   return state == STATE_OPERATIONAL;
 }
+
+void device_wifly_flush() {
+  wifly.flush();
+}

@@ -35,6 +35,7 @@ typedef struct _DeviceDescriptor {
 void device_init(DeviceDescriptor& descriptor);
 void device_update();
 bool device_is_operational();
+void device_wifly_flush();
 
 #ifdef DEBUG
 #include <SoftwareSerial/SoftwareSerial.h>
