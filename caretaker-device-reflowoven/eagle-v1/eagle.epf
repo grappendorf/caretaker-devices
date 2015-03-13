@@ -1,5 +1,5 @@
 [Eagle]
-Version="06 04 00"
+Version="06 05 00"
 Platform="Linux"
 Serial="6F21B0F2F3-LSR-WLM-1SS"
 Globals="Globals"
@@ -109,7 +109,7 @@ State=1
 Number=0
 
 [Desktop]
-Screen="3840 1080"
+Screen="5760 1080"
 Window="Win_1"
 Window="Win_2"
 Window="Win_3"
