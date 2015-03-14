@@ -8,11 +8,17 @@
  */
 
 #include <Arduino.h>
+#include <Bounce/Bounce.h>
 #include <device.h>
 
 #define NUM_SWITCHES 1
 
+#define LED_PIN 13
+#define BUTTON_PIN 4
+
 DeviceDescriptor device;
+
+Bounce button(BUTTON_PIN, 5);
 
 void send_server_register_params();
 void register_message_handlers();
@@ -37,6 +43,13 @@ void setup() {
  */
 void loop() {
   device_update();
+  if (device_is_operational()) {
+    button.update();
+    if (button.fallingEdge()) {
+      digitalWrite(LED_PIN, digitalRead(LED_PIN) == HIGH ? LOW : HIGH);
+      switch_read();
+    }
+  }
 }
 
 /**
