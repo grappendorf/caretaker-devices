@@ -32,6 +32,8 @@
 #define MSG_REFLOW_OVEN_CMD     18
 #define MSG_REFLOW_OVEN_READ    19
 #define MSG_REFLOW_OVEN_STATE   20
+#define MSG_BUTTON_READ         21
+#define MSG_BUTTON_STATE        22
 
 /** Value write modes */
 #define WRITE_DEFAULT            0
@@ -77,5 +79,9 @@
 #define REFLOW_OVEN_STATE_REFLOW_COOL  8
 #define REFLOW_OVEN_STATE_COOL         9
 #define REFLOW_OVEN_STATE_COMPLETE     10
+
+/** Button states */
+#define BUTTON_RELEASED  0
+#define BUTTON_PRESSED   1
 
 #endif /* _MESSAGES_H */
