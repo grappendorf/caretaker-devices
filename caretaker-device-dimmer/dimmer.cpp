@@ -98,10 +98,10 @@ void pwm_write();
 void setup() {
   device.type = "Dimmer";
   device.description = "Dimmer";
-  device.led_pin = PIN_LED;
-  device.button_pin = PIN_BUTTON;
-  device.register_message_handlers = register_message_handlers;
-  device_init(device);
+  device.ledPin = PIN_LED;
+  device.buttonPin = PIN_BUTTON;
+  device.registerMessageHandlers = register_message_handlers;
+  deviceInit(device);
 
   pinMode(PIN_LED, OUTPUT);
   pinMode(PIN_TRIAC, OUTPUT);
@@ -115,9 +115,9 @@ void setup() {
  * Main execution loop.
  */
 void loop() {
-  device_update();
+  deviceUpdate();
 
-  if (device_is_operational()) {
+  if (deviceIsOperational()) {
     calmDownLED();
 
     key.update();

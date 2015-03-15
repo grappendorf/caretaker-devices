@@ -351,10 +351,10 @@ void setup() {
 #ifdef CARETAKER
   device.type = "ReflowOven";
   device.description = "Reflow Oven";
-  device.led_pin = 0;
-  device.button_pin = BUTTON_1;
-  device.register_message_handlers = register_message_handlers;
-  device_init(device);
+  device.ledPin = 0;
+  device.buttonPin = BUTTON_1;
+  device.registerMessageHandlers = register_message_handlers;
+  deviceInit(device);
 #endif
 
   pinMode(BUTTON_1, INPUT);
@@ -615,11 +615,11 @@ void modeReflow() {
  */
 void loop() {
 #ifdef CARETAKER
-  device_update();
+  deviceUpdate();
 #endif
 
 #ifdef CARETAKER
-  if (device_is_operational()) {
+  if (deviceIsOperational()) {
     if (millis() > nextSendTemperatureMillis) {
       sendTemperatureToServer();
       nextSendTemperatureMillis = millis() + SEND_TEMPERATURE_INTERVAL;
@@ -696,7 +696,7 @@ void sendTemperatureToServer() {
   device.messenger->sendCmdArg(SENSOR_TEMPERATURE);
   device.messenger->sendCmdArg(temp);
   device.messenger->sendCmdEnd();
-  device_wifly_flush();
+  deviceWiflyFlush();
 }
 
 /**
@@ -709,7 +709,7 @@ void sendStatusToServer() {
   device.messenger->sendCmdArg(heaterOn);
   device.messenger->sendCmdArg(fanOn);
   device.messenger->sendCmdEnd();
-  device_wifly_flush();
+  deviceWiflyFlush();
 }
 
 /**

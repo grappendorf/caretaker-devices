@@ -47,19 +47,19 @@ void setup() {
   digitalWrite(PIN_BUTTON, HIGH);
   device.type = "DimmerRgb";
   device.description = "RGB Dimmer";
-  device.led_pin = PIN_LED_RED;
-  device.button_pin = PIN_BUTTON;
-  device.register_message_handlers = register_message_handlers;
-  device_init(device);
+  device.ledPin = PIN_LED_RED;
+  device.buttonPin = PIN_BUTTON;
+  device.registerMessageHandlers = register_message_handlers;
+  deviceInit(device);
 }
 
 /**
  * Main system loop.
  */
 void loop() {
-  device_update();
+  deviceUpdate();
 
-  if (device_is_operational()) {
+  if (deviceIsOperational()) {
     button.update();
     if (button.fallingEdge()) {
       toggle();

@@ -74,11 +74,11 @@ void setup() {
 
   device.type = "EasyVr";
   device.description = "EadyVr Speech Interface";
-  device.led_pin = PIN_LED;
-  device.button_pin = PIN_BUTTON;
-  device.register_message_handlers = register_message_handlers;
-  device.send_server_register_params = send_server_register_params;
-  device_init(device);
+  device.ledPin = PIN_LED;
+  device.buttonPin = PIN_BUTTON;
+  device.registerMessageHandlers = register_message_handlers;
+  device.sendServerRegisterParams = send_server_register_params;
+  deviceInit(device);
 }
 
 /**
@@ -171,13 +171,13 @@ void sendButtonState(uint8_t button) {
   device.messenger->sendCmdArg(button);
   device.messenger->sendCmdArg(BUTTON_PRESSED);
   device.messenger->sendCmdEnd();
-  device_wifly_flush();
+  deviceWiflyFlush();
   delay(500);
   device.messenger->sendCmdStart(MSG_BUTTON_STATE);
   device.messenger->sendCmdArg(button);
   device.messenger->sendCmdArg(BUTTON_RELEASED);
   device.messenger->sendCmdEnd();
-  device_wifly_flush();
+  deviceWiflyFlush();
 }
 
 /**

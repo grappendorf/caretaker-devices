@@ -31,19 +31,19 @@ void switch_write();
 void setup() {
   device.type = "Switch";
   device.description = "Single Port Switch";
-  device.led_pin = 13;
-  device.button_pin = 4;
-  device.register_message_handlers = register_message_handlers;
-  device.send_server_register_params = send_server_register_params;
-  device_init(device);
+  device.ledPin = 13;
+  device.buttonPin = 4;
+  device.registerMessageHandlers = register_message_handlers;
+  device.sendServerRegisterParams = send_server_register_params;
+  deviceInit(device);
 }
 
 /**
  * Main execution loop.
  */
 void loop() {
-  device_update();
-  if (device_is_operational()) {
+  deviceUpdate();
+  if (deviceIsOperational()) {
     button.update();
     if (button.fallingEdge()) {
       digitalWrite(LED_PIN, digitalRead(LED_PIN) == HIGH ? LOW : HIGH);
@@ -75,7 +75,7 @@ void register_message_handlers() {
 void switch_read() {
   device.messenger->sendCmdStart(MSG_SWITCH_STATE);
   device.messenger->sendCmdArg(0);
-  device.messenger->sendCmdArg(digitalRead(device.led_pin));
+  device.messenger->sendCmdArg(digitalRead(device.ledPin));
   device.messenger->sendCmdEnd();
 }
 
@@ -87,27 +87,27 @@ void switch_write() {
   int mode = device.messenger->readIntArg();
   switch (mode) {
     case WRITE_DEFAULT:
-      digitalWrite(device.led_pin, LOW);
+      digitalWrite(device.ledPin, LOW);
       break;
     case WRITE_ABSOLUTE:
-      digitalWrite(device.led_pin, device.messenger->readIntArg() != 0 ? HIGH : LOW);
+      digitalWrite(device.ledPin, device.messenger->readIntArg() != 0 ? HIGH : LOW);
       break;
     case WRITE_INCREMENT:
       device.messenger->next(); // Ignore increment value
-      digitalWrite(device.led_pin, HIGH);
+      digitalWrite(device.ledPin, HIGH);
       break;
     case WRITE_INCREMENT_DEFAULT:
-      digitalWrite(device.led_pin, HIGH);
+      digitalWrite(device.ledPin, HIGH);
       break;
     case WRITE_DECREMENT:
       device.messenger->next(); // Ignore decrement value
-      digitalWrite(device.led_pin, LOW);
+      digitalWrite(device.ledPin, LOW);
       break;
     case WRITE_DECREMENT_DEFAULT:
-      digitalWrite(device.led_pin, LOW);
+      digitalWrite(device.ledPin, LOW);
       break;
     case WRITE_TOGGLE:
-      digitalWrite(device.led_pin, digitalRead(device.led_pin) == LOW ? HIGH : LOW);
+      digitalWrite(device.ledPin, digitalRead(device.ledPin) == LOW ? HIGH : LOW);
       break;
     default:
       break;
