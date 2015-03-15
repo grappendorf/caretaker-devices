@@ -167,8 +167,7 @@ void activate_blink_pattern(int* _blink_pattern) {
 /**
  * Initialize the device.
  *
- * @param _led_pin Pin to which the status LED is connected
- * @param _button_pin Pin to which the device control button connected
+ * @param descriptor Device information
  */
 void device_init(DeviceDescriptor& descriptor) {
 #ifdef DEBUG
@@ -186,8 +185,10 @@ void device_init(DeviceDescriptor& descriptor) {
   }
   blink_pattern = NULL;
 
-  pinMode(device->button_pin, INPUT);
-  digitalWrite(device->button_pin, HIGH);
+  if (device->button_pin > 0) {
+    pinMode(device->button_pin, INPUT);
+    digitalWrite(device->button_pin, HIGH);
+  }
 
   messenger.attach(MSG_REGISTER_RESPONSE, onServerRegisterResponse);
   messenger.attach(MSG_PING, onPing);
@@ -226,11 +227,13 @@ void device_update() {
       DEBUG_PRINTLN_STATE(F("INIT"))
 
 #ifdef AUTO_CONFIG
-      if (digitalRead(device->button_pin) == LOW) {
-        activate_blink_pattern(factoryreset_blink_pattern);
-        timeout_millis = millis() + WAIT_FOR_FACTORYRESET_TIMEOUT;
-        state = STATE_FACTORY_RESET_CONFIRM;
-        break;
+      if (device->button_pin > 0) {
+        if (digitalRead(device->button_pin) == LOW) {
+          activate_blink_pattern(factoryreset_blink_pattern);
+          timeout_millis = millis() + WAIT_FOR_FACTORYRESET_TIMEOUT;
+          state = STATE_FACTORY_RESET_CONFIRM;
+          break;
+        }
       }
 #endif
 
@@ -260,13 +263,15 @@ void device_update() {
       // before the factory reset is actually executed
 
       DEBUG_PRINTLN_STATE(F("FACTORY_RESET_CONFIRM"))
-      if (digitalRead(device->button_pin) == HIGH) {
-        // Factory reset was cancelled
-        delay(10);
-        activate_blink_pattern(NULL);
-        state = STATE_INIT;
-      } else if (millis() > timeout_millis) {
-        state = STATE_FACTORY_RESET;
+      if (device->button_pin > 0) {
+        if (digitalRead(device->button_pin) == HIGH) {
+          // Factory reset was cancelled
+          delay(10);
+          activate_blink_pattern(NULL);
+          state = STATE_INIT;
+        } else if (millis() > timeout_millis) {
+          state = STATE_FACTORY_RESET;
+        }
       }
       break;
 #endif
