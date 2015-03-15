@@ -50,6 +50,16 @@ void switchWrite();
  */
 void setup()
 {
+  for (uint8_t i = 0; i < 8; ++i)
+  {
+    pinMode(switchPins[i], OUTPUT);
+  }
+  pinMode(PIN_BUZZER, OUTPUT);
+
+  digitalWrite(PIN_BUZZER, HIGH);
+  delay(50);
+  digitalWrite(PIN_BUZZER, LOW);
+
   device.type = "Switch";
   device.description = "8-Port Switch";
   device.ledPin = 0;
@@ -57,12 +67,6 @@ void setup()
   device.registerMessageHandlers = registerMessageHandlers;
   device.sendServerRegisterParams = sendServerRegisterParams;
   deviceInit(device);
-
-  for (uint8_t i = 0; i < 8; ++i)
-  {
-    pinMode(switchPins[i], OUTPUT);
-  }
-  pinMode(PIN_BUZZER, OUTPUT);
 }
 
 /**
