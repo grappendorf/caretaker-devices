@@ -8,10 +8,7 @@
  */
 
 #include <Arduino.h>
-#include <XXBee/XXBee.h>
-#include <CoYoHoMessages.h>
-#include <CoYoHoListenerManager.h>
-#include <avr/wdt.h>
+#include <device.h>
 
 /** Digital I/O pin numbers */
 const uint8_t PIN_SWITCH0 = 8;
@@ -31,36 +28,61 @@ const uint8_t switchPins[] = { PIN_SWITCH0, PIN_SWITCH1, PIN_SWITCH2, PIN_SWITCH
 /** Total number of switch pins */
 const uint8_t NUM_SWITCH_PINS = sizeof switchPins / sizeof switchPins[0];
 
-/** ZigBee baud rate */
-const long XBEE_BAUD_RATE = 57600;
-
-/** XBee device */
-XXBee<8> xbee;
-
-/** ZigBee reusable RX response message */
-ZBRxResponse rxResponse;
-
-/** Device state listeners */
-ListenerManager<4> listenerManager(&xbee);
-
 /** Beep duration in milli seconds */
-const int BEEP_DURATION_SHORT = 100;
-
-/** Beep duration in milli seconds */
-const int BEEP_DURATION_LONG = 500;
+const int BEEP_DURATION = 100;
 
 /** When to switch off the buzzer (milli second timestamp) */
 unsigned long beepCalmDownTime = 0;
+
+/** Device information */
+DeviceDescriptor device;
+
+void beep(int duration);
+void calmDownBeep();
+void sendServerRegisterParams();
+void registerMessageHandlers();
+void sendSwitchState(int switchNum);
+void switchRead();
+void switchWrite();
+
+/**
+ * System setup.
+ */
+void setup()
+{
+  device.type = "Switch";
+  device.description = "8-Port Switch";
+  device.ledPin = 0;
+  device.buttonPin = 0;
+  device.registerMessageHandlers = registerMessageHandlers;
+  device.sendServerRegisterParams = sendServerRegisterParams;
+  deviceInit(device);
+
+  for (uint8_t i = 0; i < 8; ++i)
+  {
+    pinMode(switchPins[i], OUTPUT);
+  }
+  pinMode(PIN_BUZZER, OUTPUT);
+}
+
+/**
+ * Main execution loop.
+ */
+void loop()
+{
+  calmDownBeep();
+  deviceUpdate();
+}
 
 /**
  * Beep the buzzer.
  *
  * @param duration Beep duration in milli seconds
  */
-void beep(int duration = BEEP_DURATION_SHORT)
+void beep()
 {
 	digitalWrite(PIN_BUZZER, HIGH);
-	beepCalmDownTime = millis() + duration;
+	beepCalmDownTime = millis() + BEEP_DURATION;
 	if (beepCalmDownTime == 0)
 	{
 		beepCalmDownTime = 1;
@@ -81,146 +103,83 @@ void calmDownBeep()
 }
 
 /**
- * Notify all listeners about a state change of the specified switch.
+ * Send additional parameter with the MSG_REGISTER_REQUEST.
  *
- * @param changedSwitchNum The number of the changed switch
+ * @param messenger
  */
-void notifyListeners(uint8_t changedSwitchNum)
-{
-	uint8_t switchPin = switchPins[changedSwitchNum];
-	uint8_t message[] = { COYOHO_SWITCH_READ | COYOHO_MESSAGE_NOTIFY, changedSwitchNum,
-			(uint8_t) (digitalRead(switchPin) == HIGH ? 1 : 0) };
-	listenerManager.notifyListeners(message, sizeof(message));
+void sendServerRegisterParams() {
+  device.messenger->sendCmdArg(NUM_SWITCH_PINS);
 }
 
 /**
- * Process XBee messages.
+ * Register device specific message handlers.
  */
-void processXBeeMessages()
-{
-	xbee.readPacket();
-	if (xbee.getResponse().isAvailable())
-	{
-		if (xbee.getResponse().getApiId() == ZB_RX_RESPONSE)
-		{
-			xbee.getResponse().getZBRxResponse(rxResponse);
-			xbee.resetData(rxResponse.getData(), rxResponse.getDataLength());
-			while (xbee.dataAvailable())
-			{
-				uint8_t command = xbee.getData();
-
-				if (listenerManager.processXBeeMessage(command, xbee, rxResponse))
-				{
-					continue;
-				}
-
-				switch (command)
-				{
-					case COYOHO_RESET:
-						for (;;)
-						{
-						}
-						break;
-
-					case COYOHO_SWITCH_WRITE:
-						if (xbee.dataAvailable(2))
-						{
-							uint8_t switchNum = xbee.getData();
-							uint8_t switchPin = switchPins[switchNum];
-							uint8_t mode = xbee.getData();
-							if (0 <= switchNum && switchNum <= 7)
-							{
-								switch (mode)
-								{
-									case COYOHO_WRITE_ABSOLUTE:
-										if (xbee.dataAvailable())
-										{
-											digitalWrite(switchPin, xbee.getData() != 0 ? HIGH : LOW);
-										}
-										break;
-									case COYOHO_WRITE_INCREMENT:
-										if (xbee.dataAvailable())
-										{
-											xbee.getData();
-											digitalWrite(switchPin, HIGH);
-										}
-										break;
-									case COYOHO_WRITE_INCREMENT_DEFAULT:
-										digitalWrite(switchPin, HIGH);
-										break;
-									case COYOHO_WRITE_DECREMENT:
-										if (xbee.dataAvailable())
-										{
-											xbee.getData();
-											digitalWrite(switchPin, LOW);
-										}
-										break;
-									case COYOHO_WRITE_DECREMENT_DEFAULT:
-										digitalWrite(switchPin, LOW);
-										break;
-									case COYOHO_WRITE_TOGGLE:
-										digitalWrite(switchPin, digitalRead(switchPin) == LOW ? HIGH : LOW);
-										break;
-									case COYOHO_WRITE_DEFAULT:
-									default:
-										digitalWrite(switchPin, LOW);
-										break;
-								}
-								notifyListeners(switchNum);
-								beep();
-							}
-						}
-						break;
-
-					case COYOHO_SWITCH_READ:
-						if (xbee.dataAvailable(1))
-						{
-							uint8_t switchNum = xbee.getData();
-							xbee.resetPayload();
-							xbee.putPayload(COYOHO_SWITCH_READ | COYOHO_MESSAGE_RESPONSE);
-							xbee.putPayload(switchNum);
-							xbee.putPayload(digitalRead(switchPins[switchNum]) == HIGH ? 1 : 0);
-							ZBTxRequest txRequest(rxResponse.getRemoteAddress64(), xbee.payload(),
-									xbee.payloadLenght());
-							xbee.send(txRequest);
-						}
-						break;
-
-					case COYOHO_DUMP:
-						xbee.resetPayload();
-						xbee.putPayload(COYOHO_DUMP | COYOHO_MESSAGE_RESPONSE);
-						xbee.putPayload(COYOHO_DUMP_VERSION);
-						xbee.putPayload(COYOHO_VERSION);
-						break;
-				}
-			}
-		}
-	}
+void registerMessageHandlers() {
+  device.messenger->attach(MSG_SWITCH_WRITE, switchWrite);
+  device.messenger->attach(MSG_SWITCH_READ, switchRead);
 }
 
 /**
- * System setup.
+ * Send the state of the specified switch to the server.
+ *
+ * @param switchNum The switch number
  */
-void setup()
-{
-	for (uint8_t i = 0; i < 8; ++i)
-	{
-		pinMode(switchPins[i], OUTPUT);
-	}
-	Serial.begin(XBEE_BAUD_RATE);
-	xbee.begin(Serial);
-	pinMode(PIN_BUZZER, OUTPUT);
-	beep(BEEP_DURATION_LONG);
-	wdt_enable(WDTO_2S);
+void sendSwitchState(int switchNum) {
+  uint8_t switchPin = switchPins[switchNum];
+  device.messenger->sendCmdStart(MSG_SWITCH_STATE);
+  device.messenger->sendCmdArg(switchNum);
+  device.messenger->sendCmdArg(digitalRead(switchPin) == HIGH ? 1 : 0);
+  device.messenger->sendCmdEnd();
 }
 
 /**
- * Main execution loop.
+ * Called when a MSG_SWITCH_READ was received.
  */
-void loop()
-{
-	wdt_reset();
-	calmDownBeep();
-	listenerManager.checkListenerLeases();
-	processXBeeMessages();
+void switchRead() {
+  int switchNum = device.messenger->readIntArg();
+  if (switchNum < 0 || switchNum > 7) {
+    return;
+  }
+  sendSwitchState(switchNum);
+}
+
+/**
+ * Called when a MSG_SWITCH_WRITE was received.
+ */
+void switchWrite() {
+  int switchNum = device.messenger->readIntArg();
+  if (switchNum < 0 || switchNum > 7) {
+    return;
+  }
+  uint8_t switchPin = switchPins[switchNum];
+  uint8_t mode = device.messenger->readIntArg();
+  switch (mode) {
+    case WRITE_DEFAULT:
+      digitalWrite(switchPin, LOW);
+      break;
+    case WRITE_ABSOLUTE:
+      digitalWrite(switchPin, device.messenger->readIntArg() != 0 ? HIGH : LOW);
+      break;
+    case WRITE_INCREMENT:
+      device.messenger->next(); // Ignore increment value
+      digitalWrite(switchPin, HIGH);
+      break;
+    case WRITE_INCREMENT_DEFAULT:
+      digitalWrite(switchPin, HIGH);
+      break;
+    case WRITE_DECREMENT:
+      device.messenger->next(); // Ignore decrement value
+      digitalWrite(switchPin, LOW);
+      break;
+    case WRITE_DECREMENT_DEFAULT:
+      digitalWrite(switchPin, LOW);
+      break;
+    case WRITE_TOGGLE:
+      digitalWrite(switchPin, digitalRead(switchPin) == LOW ? HIGH : LOW);
+      break;
+    default:
+      break;
+  }
+  beep();
+  sendSwitchState(switchNum);
 }
