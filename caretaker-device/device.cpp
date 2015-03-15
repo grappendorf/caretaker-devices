@@ -14,7 +14,7 @@
 #include "device.h"
 
 #ifdef DEBUG
-int debug_last_state = -1;
+int debugLastState = -1;
 SoftwareSerial debug(2, 3);
 #endif
 
@@ -26,8 +26,8 @@ SoftwareSerial debug(2, 3);
 #define PHRASE_MAX_LEN 64
 
 uint16_t magic;
-char device_uuid[DEVICE_UUID_LEN + 1];
-char device_name[DEVICE_NAME_MAX_LEN + 1];
+char deviceUuid[DEVICE_UUID_LEN + 1];
+char deviceName[DEVICE_NAME_MAX_LEN + 1];
 char ssid[SSID_MAX_LEN + 1];
 char phrase[PHRASE_MAX_LEN + 1];
 
@@ -35,8 +35,8 @@ char phrase[PHRASE_MAX_LEN + 1];
 
 #define EEPROM_MAGIC_ADDR         0
 #define EEPROM_DEVICE_UUID_ADDR   (EEPROM_MAGIC_ADDR + sizeof(magic))
-#define EEPROM_DEVICE_NAME_ADDR   (EEPROM_DEVICE_UUID_ADDR + sizeof(device_uuid))
-#define EEPROM_SSID_ADDR          (EEPROM_DEVICE_NAME_ADDR + sizeof(device_name))
+#define EEPROM_DEVICE_NAME_ADDR   (EEPROM_DEVICE_UUID_ADDR + sizeof(deviceUuid))
+#define EEPROM_SSID_ADDR          (EEPROM_DEVICE_NAME_ADDR + sizeof(deviceName))
 #define EEPROM_PHRASE_ADDR        (EEPROM_SSID_ADDR + sizeof(ssid))
 
 static WiFly wifly(Serial);
@@ -48,16 +48,16 @@ static DeviceDescriptor* device;
 #define BUF_LEN 128
 static char buf[BUF_LEN + 1];
 #define SERVER_ADDRESS_LEN 15
-static char server_address[SERVER_ADDRESS_LEN + 1];
-static unsigned long blink_millis;
-static int blink_index;
-static int* blink_pattern;
+static char serverAddress[SERVER_ADDRESS_LEN + 1];
+static unsigned long blinkMillis;
+static int blinkIndex;
+static int* blinkPattern;
 #ifdef AUTO_CONFIG
 #define MAC_LEN 17
 static char mac[MAC_LEN + 1];
-static int new_device_blink_pattern[] = { 1500, 100, 0 };
-static int discovered_blink_pattern[] = { 500, 500, 0 };
-static int factoryreset_blink_pattern[] = { 50, 50, 0 };
+static int newDeviceBlinkPattern[] = { 1500, 100, 0 };
+static int discoveredBlinkPattern[] = { 500, 500, 0 };
+static int factoryResetBlinkPattern[] = { 50, 50, 0 };
 #endif
 
 #define WAIT_FOR_FACTORYRESET_TIMEOUT (3L * 1000L)
@@ -65,8 +65,8 @@ static int factoryreset_blink_pattern[] = { 50, 50, 0 };
 #define WAIT_FOR_REGISTRATION_TIMEOUT (20L * 1000L)
 #define PING_INTERVAL (5 * 60 * 1000L)
 
-static unsigned long timeout_millis;
-static unsigned long next_ping_millis;
+static unsigned long timeoutMillis;
+static unsigned long nextPingMillis;
 
 enum State {
   STATE_INIT,
@@ -94,11 +94,11 @@ void onServerRegisterResponse();
 void onPing();
 
 #ifdef DEBUG
-void dump_config_values() {
+void dumpConfigValues() {
   debug.print(F("- UUID: "));
-  debug.println(device_uuid);
+  debug.println(deviceUuid);
   debug.print(F("- Name: "));
-  debug.println(device_name);
+  debug.println(deviceName);
   debug.print(F("- Type: "));
   debug.println(device->type);
   debug.print(F("- SSID: "));
@@ -114,7 +114,7 @@ void dump_config_values() {
  * @param s The string to check
  * @return True if s matches the received data
  */
-bool check_wifly_input(const char* s) {
+bool checkWiflyInput(const char* s) {
   int len = strlen(s);
   if (wifly.available() < len) {
     return false;
@@ -132,18 +132,18 @@ bool check_wifly_input(const char* s) {
  * Read a '\n' terminated line from the wifly module.
  *
  * @param res Where to store the received data
- * @param max_chars Maximum number of characters to read
+ * @param maxChars Maximum number of characters to read
  * @return True if a line was read successfully
  */
-boolean wifly_readline(char* res, int max_chars) {
-  int read_bytes = wifly.readBytesUntil('\n', buf, BUF_LEN);
-  if (read_bytes == 0) {
+boolean wiflyReadline(char* res, int maxChars) {
+  int readBytes = wifly.readBytesUntil('\n', buf, BUF_LEN);
+  if (readBytes == 0) {
     return false;
   }
-  if (read_bytes > max_chars) {
-    read_bytes = max_chars;
+  if (readBytes > maxChars) {
+    readBytes = maxChars;
   }
-  buf[read_bytes] = '\0';
+  buf[readBytes] = '\0';
   strcpy(res, buf);
   return true;
 }
@@ -153,13 +153,13 @@ boolean wifly_readline(char* res, int max_chars) {
  *
  * @param _blink_pattern The pattern to activate
  */
-void activate_blink_pattern(int* _blink_pattern) {
-  blink_pattern = _blink_pattern;
-  if (device->led_pin > 0) {
-    digitalWrite(device->led_pin, LOW);
-    if (blink_pattern) {
-      blink_index = 0;
-      blink_millis = millis() + blink_pattern[0];
+void activateBlinkPattern(int* _blinkPattern) {
+  blinkPattern = _blinkPattern;
+  if (device->ledPin > 0) {
+    digitalWrite(device->ledPin, LOW);
+    if (blinkPattern) {
+      blinkIndex = 0;
+      blinkMillis = millis() + blinkPattern[0];
     }
   }
 }
@@ -169,7 +169,7 @@ void activate_blink_pattern(int* _blink_pattern) {
  *
  * @param descriptor Device information
  */
-void device_init(DeviceDescriptor& descriptor) {
+void deviceInit(DeviceDescriptor& descriptor) {
 #ifdef DEBUG
   debug.begin(9600);
 #endif
@@ -179,21 +179,21 @@ void device_init(DeviceDescriptor& descriptor) {
   device = &descriptor;
   device->messenger = & messenger;
 
-  if (device->led_pin > 0) {
-    pinMode(device->led_pin, OUTPUT);
-    digitalWrite(device->led_pin, LOW);
+  if (device->ledPin > 0) {
+    pinMode(device->ledPin, OUTPUT);
+    digitalWrite(device->ledPin, LOW);
   }
-  blink_pattern = NULL;
+  blinkPattern = NULL;
 
-  if (device->button_pin > 0) {
-    pinMode(device->button_pin, INPUT);
-    digitalWrite(device->button_pin, HIGH);
+  if (device->buttonPin > 0) {
+    pinMode(device->buttonPin, INPUT);
+    digitalWrite(device->buttonPin, HIGH);
   }
 
   messenger.attach(MSG_REGISTER_RESPONSE, onServerRegisterResponse);
   messenger.attach(MSG_PING, onPing);
-  if (device->register_message_handlers) {
-    (*device->register_message_handlers)();
+  if (device->registerMessageHandlers) {
+    (*device->registerMessageHandlers)();
   }
 
   Serial.begin(57600);
@@ -202,17 +202,17 @@ void device_init(DeviceDescriptor& descriptor) {
 /**
  * This method must be called regularily within the loop() function
  */
-void device_update() {
+void deviceUpdate() {
   // Blink the LED
 
-  if (device->led_pin > 0) {
-    if (blink_pattern && millis() > blink_millis) {
-      digitalWrite(device->led_pin, digitalRead(device->led_pin) == HIGH ? LOW : HIGH);
-      ++blink_index;
-      if (blink_pattern[blink_index] == 0) {
-        blink_index = 0;
+  if (device->ledPin > 0) {
+    if (blinkPattern && millis() > blinkMillis) {
+      digitalWrite(device->ledPin, digitalRead(device->ledPin) == HIGH ? LOW : HIGH);
+      ++blinkIndex;
+      if (blinkPattern[blinkIndex] == 0) {
+        blinkIndex = 0;
       }
-      blink_millis = millis() + blink_pattern[blink_index];
+      blinkMillis = millis() + blinkPattern[blinkIndex];
     }
   }
 
@@ -227,10 +227,10 @@ void device_update() {
       DEBUG_PRINTLN_STATE(F("INIT"))
 
 #ifdef AUTO_CONFIG
-      if (device->button_pin > 0) {
-        if (digitalRead(device->button_pin) == LOW) {
-          activate_blink_pattern(factoryreset_blink_pattern);
-          timeout_millis = millis() + WAIT_FOR_FACTORYRESET_TIMEOUT;
+      if (device->buttonPin > 0) {
+        if (digitalRead(device->buttonPin) == LOW) {
+          activateBlinkPattern(factoryResetBlinkPattern);
+          timeoutMillis = millis() + WAIT_FOR_FACTORYRESET_TIMEOUT;
           state = STATE_FACTORY_RESET_CONFIRM;
           break;
         }
@@ -248,8 +248,8 @@ void device_update() {
       }
 
       DEBUG_PRINTLN(F("Valid EEPROM Data"))
-      EEPROM.readBlock(EEPROM_DEVICE_UUID_ADDR, device_uuid, DEVICE_UUID_LEN);
-      EEPROM.readBlock(EEPROM_DEVICE_NAME_ADDR, device_name, DEVICE_NAME_MAX_LEN);
+      EEPROM.readBlock(EEPROM_DEVICE_UUID_ADDR, deviceUuid, DEVICE_UUID_LEN);
+      EEPROM.readBlock(EEPROM_DEVICE_NAME_ADDR, deviceName, DEVICE_NAME_MAX_LEN);
       EEPROM.readBlock(EEPROM_SSID_ADDR, ssid, SSID_MAX_LEN);
       EEPROM.readBlock(EEPROM_PHRASE_ADDR, phrase, PHRASE_MAX_LEN);
       DEBUG_DUMP_CONFIG_VALUES()
@@ -263,13 +263,13 @@ void device_update() {
       // before the factory reset is actually executed
 
       DEBUG_PRINTLN_STATE(F("FACTORY_RESET_CONFIRM"))
-      if (device->button_pin > 0) {
-        if (digitalRead(device->button_pin) == HIGH) {
+      if (device->buttonPin > 0) {
+        if (digitalRead(device->buttonPin) == HIGH) {
           // Factory reset was cancelled
           delay(10);
-          activate_blink_pattern(NULL);
+          activateBlinkPattern(NULL);
           state = STATE_INIT;
-        } else if (millis() > timeout_millis) {
+        } else if (millis() > timeoutMillis) {
           state = STATE_FACTORY_RESET;
         }
       }
@@ -285,7 +285,7 @@ void device_update() {
       for (int i = 0; i < EEPROM_SIZE; ++i) {
         EEPROM.writeByte(i, 0xff);
       }
-      activate_blink_pattern(NULL);
+      activateBlinkPattern(NULL);
       state = STATE_INIT;
       break;
 #endif
@@ -296,7 +296,7 @@ void device_update() {
       // Entered if this is a new device with no stored valid EEPROM data
 
       DEBUG_PRINTLN_STATE(F("NEW_DEVICE"))
-      activate_blink_pattern(new_device_blink_pattern);
+      activateBlinkPattern(newDeviceBlinkPattern);
       wifly.reset();
       wifly.sendCommand("set u b 57600\r");
       wifly.sendCommand("get m\r", "Mac Addr=");
@@ -327,8 +327,8 @@ void device_update() {
       // Wait until the configuration app has opened a connection to this device
 
       DEBUG_PRINTLN_STATE(F("WAIT_FOR_DISCOVERY"))
-      if (check_wifly_input("*OPEN*")) {
-        activate_blink_pattern(discovered_blink_pattern);
+      if (checkWiflyInput("*OPEN*")) {
+        activateBlinkPattern(discoveredBlinkPattern);
         state = STATE_SEND_INFO;
       }
       break;
@@ -354,8 +354,8 @@ void device_update() {
       // Wait for the receiving confirmation
 
       DEBUG_PRINTLN_STATE(F("WAIT_FOR_SEND_INFO_ACK"))
-      if (check_wifly_input("*CLOS*")) {
-        timeout_millis = millis() + WAIT_FOR_CONFIG_TIMEOUT;
+      if (checkWiflyInput("*CLOS*")) {
+        timeoutMillis = millis() + WAIT_FOR_CONFIG_TIMEOUT;
         state = STATE_WAIT_FOR_CONFIG;
       }
       break;
@@ -367,9 +367,9 @@ void device_update() {
       // Configuration app has WAIT_FOR_CONFIG_TIMEOUT seconds to send the configuration
 
       DEBUG_PRINTLN_STATE(F("WAIT_FOR_CONFIG"))
-      if (check_wifly_input("*OPEN*")) {
+      if (checkWiflyInput("*OPEN*")) {
         state = STATE_CONFIGURE_DEVICE;
-      } else if (millis() > timeout_millis) {
+      } else if (millis() > timeoutMillis) {
         state = STATE_CONFIG_TIMEOUT;
       }
       break;
@@ -392,39 +392,39 @@ void device_update() {
 
       DEBUG_PRINTLN_STATE(F("CONFIGURE_DEVICE"))
       wifly.println(); // Other side receives "*HELLO*\n"
-      if (!(wifly_readline(device_uuid, DEVICE_UUID_LEN))) {
+      if (!(wiflyReadline(deviceUuid, DEVICE_UUID_LEN))) {
         state = STATE_CONFIG_TIMEOUT;
         break;
       }
 #ifdef DEBUG
       // Always use the same uuid for debugging
-      strcpy(device_uuid, "89dd4596-3356-4c7a-9876-e3af6ea68e15");
+      strcpy(deviceUuid, "89dd4596-3356-4c7a-9876-e3af6ea68e15");
 #endif
-      if (!(wifly_readline(device_name, DEVICE_NAME_MAX_LEN))) {
+      if (!(wiflyReadline(deviceName, DEVICE_NAME_MAX_LEN))) {
         state = STATE_CONFIG_TIMEOUT;
         break;
       }
-      if (!(wifly_readline(ssid, SSID_MAX_LEN))) {
+      if (!(wiflyReadline(ssid, SSID_MAX_LEN))) {
         state = STATE_CONFIG_TIMEOUT;
         break;
       }
-      if (!(wifly_readline(phrase, PHRASE_MAX_LEN))) {
+      if (!(wiflyReadline(phrase, PHRASE_MAX_LEN))) {
         state = STATE_CONFIG_TIMEOUT;
         break;
       }
 
-      while (!check_wifly_input("*CLOS*")) {
+      while (!checkWiflyInput("*CLOS*")) {
       }
 
       DEBUG_DUMP_CONFIG_VALUES()
 
       EEPROM.writeInt(EEPROM_MAGIC_ADDR, MAGIC_NUMBER);
-      EEPROM.writeBlock(EEPROM_DEVICE_UUID_ADDR, device_uuid, DEVICE_UUID_LEN);
-      EEPROM.writeBlock(EEPROM_DEVICE_NAME_ADDR, device_name, DEVICE_NAME_MAX_LEN);
+      EEPROM.writeBlock(EEPROM_DEVICE_UUID_ADDR, deviceUuid, DEVICE_UUID_LEN);
+      EEPROM.writeBlock(EEPROM_DEVICE_NAME_ADDR, deviceName, DEVICE_NAME_MAX_LEN);
       EEPROM.writeBlock(EEPROM_SSID_ADDR, ssid, SSID_MAX_LEN);
       EEPROM.writeBlock(EEPROM_PHRASE_ADDR, phrase, PHRASE_MAX_LEN);
 
-      activate_blink_pattern(NULL);
+      activateBlinkPattern(NULL);
       state = STATE_CONNECT_WLAN;
       break;
 #endif
@@ -451,7 +451,7 @@ void device_update() {
       wifly.sendCommand(buf, "OK");
       snprintf(buf, BUF_LEN, "set w p %s\r", phrase);
       wifly.sendCommand(buf, "OK");
-      snprintf(buf, BUF_LEN, "set o d %s\r", device_name);
+      snprintf(buf, BUF_LEN, "set o d %s\r", deviceName);
       wifly.sendCommand(buf, "OK");
       wifly.save();
       wifly.reboot();
@@ -464,13 +464,13 @@ void device_update() {
       // with server IP address
 
       DEBUG_PRINTLN_STATE(F("WAIT_FOR_BROADCAST_RESPONSE"))
-      if (check_wifly_input("*SERVER*\n")) {
-        if (wifly_readline(server_address, SERVER_ADDRESS_LEN)) {
-          snprintf(buf, BUF_LEN, "- Broadcast response from server: %s", server_address);
+      if (checkWiflyInput("*SERVER*\n")) {
+        if (wiflyReadline(serverAddress, SERVER_ADDRESS_LEN)) {
+          snprintf(buf, BUF_LEN, "- Broadcast response from server: %s", serverAddress);
           DEBUG_PRINTLN(buf);
           // Set the server IP address for UDP transmissions
           // Disable UDP broadcast
-          snprintf(buf, BUF_LEN, "set i h %s\r", server_address);
+          snprintf(buf, BUF_LEN, "set i h %s\r", serverAddress);
           wifly.sendCommand(buf, "OK");
           wifly.sendCommand("set b i 0\r", "OK");
           wifly.dataMode();
@@ -485,15 +485,15 @@ void device_update() {
 
       DEBUG_PRINTLN_STATE(F("REGISTER_WITH_SERVER"))
       messenger.sendCmdStart(MSG_REGISTER_REQUEST);
-      messenger.sendCmdArg(device_uuid);
+      messenger.sendCmdArg(deviceUuid);
       messenger.sendCmdArg(device->type);
-      messenger.sendCmdArg(device_name);
+      messenger.sendCmdArg(deviceName);
       messenger.sendCmdArg(device->description);
-      if (device->send_server_register_params) {
-        (*device->send_server_register_params)();
+      if (device->sendServerRegisterParams) {
+        (*device->sendServerRegisterParams)();
       }
       messenger.sendCmdEnd();
-      timeout_millis = millis() + WAIT_FOR_REGISTRATION_TIMEOUT;
+      timeoutMillis = millis() + WAIT_FOR_REGISTRATION_TIMEOUT;
       state = STATE_WAIT_FOR_REGISTER_WITH_SERVER_RESPONSE;
       break;
 
@@ -502,7 +502,7 @@ void device_update() {
       // Wait until the server responds to our registration request
 
       DEBUG_PRINTLN_STATE(F("WAIT_FOR_REGISTER_WITH_SERVER_RESPONSE"))
-      if (millis() > timeout_millis) {
+      if (millis() > timeoutMillis) {
         state = STATE_REGISTER_WITH_SERVER;
       } else {
         messenger.feedinSerialData();
@@ -514,9 +514,9 @@ void device_update() {
       // Normal operational mode
 
       DEBUG_PRINTLN_STATE(F("OPERATIONAL"))
-      if (millis () > next_ping_millis) {
+      if (millis () > nextPingMillis) {
         messenger.sendCmd(MSG_PING);
-        next_ping_millis = millis() + PING_INTERVAL;
+        nextPingMillis = millis() + PING_INTERVAL;
       }
       messenger.feedinSerialData();
       break;
@@ -544,10 +544,10 @@ void onPing() {
 /**
  * Return true if the device is in STATE_OPERATIONAL.
  */
-bool device_is_operational() {
+bool deviceIsOperational() {
   return state == STATE_OPERATIONAL;
 }
 
-void device_wifly_flush() {
+void deviceWiflyFlush() {
   wifly.flush();
 }
