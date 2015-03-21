@@ -13,6 +13,9 @@
 #ifndef _DEVICE_H
 #define _DEVICE_H
 
+// Define the WiFly serial speed
+#define WIFLY_BAUDRATE 57600
+
 // Define to set a non standard (55555) broadcast port
 //#define BROADCAST_PORT 44444
 
@@ -27,8 +30,9 @@ typedef struct _DeviceDescriptor {
   const char* description;
   int ledPin;
   int buttonPin;
-  void (*registerMessageHandlers) ();
-  void (*sendServerRegisterParams) ();
+  void (*registerMessageHandlers)();
+  void (*sendServerRegisterParams)();
+  void (*operationalCallback)();
   CmdMessenger* messenger;
 } DeviceDescriptor;
 
@@ -36,6 +40,9 @@ void deviceInit(DeviceDescriptor& descriptor);
 void deviceUpdate();
 bool deviceIsOperational();
 void deviceWiflyFlush();
+void deviceWiflySleepAfter(int seconds);
+void deviceWiflyWakeup();
+void deviceWiflyRepl();
 
 #ifdef DEBUG
 #include <SoftwareSerial/SoftwareSerial.h>
@@ -51,5 +58,8 @@ extern SoftwareSerial debug;
 #define DEBUG_PRINTLN_STATE(s)
 #define DEBUG_DUMP_CONFIG_VALUES()
 #endif
+
+#define MAKE_STRING_PRE(x) #x
+#define MAKE_STRING(x) MAKE_STRING_PRE(x)
 
 #endif

@@ -177,7 +177,7 @@ void deviceInit(DeviceDescriptor& descriptor) {
   EEPROM.setMemPool(0, EEPROM_SIZE);
 
   device = &descriptor;
-  device->messenger = & messenger;
+  device->messenger = &messenger;
 
   if (device->ledPin > 0) {
     pinMode(device->ledPin, OUTPUT);
@@ -196,7 +196,7 @@ void deviceInit(DeviceDescriptor& descriptor) {
     (*device->registerMessageHandlers)();
   }
 
-  Serial.begin(57600);
+  Serial.begin(WIFLY_BAUDRATE);
 }
 
 /**
@@ -298,7 +298,7 @@ void deviceUpdate() {
       DEBUG_PRINTLN_STATE(F("NEW_DEVICE"))
       activateBlinkPattern(newDeviceBlinkPattern);
       wifly.reset();
-      wifly.sendCommand("set u b 57600\r");
+      wifly.sendCommand("set u b " MAKE_STRING(WIFLY_BAUDRATE) "\r");
       wifly.sendCommand("get m\r", "Mac Addr=");
       wifly.receive((uint8_t *) mac, 17);
       mac[17] = '\0';
@@ -435,14 +435,14 @@ void deviceUpdate() {
 
       DEBUG_PRINTLN_STATE(F("CONNECT_WLAN"))
       wifly.reset();
-      wifly.sendCommand("set u b 57600\r");
+      wifly.sendCommand("set u b " MAKE_STRING(WIFLY_BAUDRATE) "\r");
       wifly.sendCommand("set i h 0.0.0.0\r", "OK"); // UDP auto pairing
       wifly.sendCommand("set i f 0x40\r", "OK"); // UDP auto pairing
       wifly.sendCommand("set i d 1\r", "OK"); // DHCP client on
       wifly.sendCommand("set i p 1\r", "OK"); // Use UDP
       wifly.sendCommand("set b i 7\r", "OK"); // UDP broadcast interval 8 secs
 #ifdef BROADCAST_PORT
-      wifly.sendCommand("set b p 44444\r", "OK"); // Set broadcast port to 44444 when debugging
+          wifly.sendCommand("set b p 44444\r", "OK"); // Set broadcast port to 44444 when debugging
 #endif
       wifly.sendCommand("set w a 4\r", "OK");
       wifly.sendCommand("set w c 0\r", "OK");
@@ -473,6 +473,7 @@ void deviceUpdate() {
           snprintf(buf, BUF_LEN, "set i h %s\r", serverAddress);
           wifly.sendCommand(buf, "OK");
           wifly.sendCommand("set b i 0\r", "OK");
+          wifly.save();
           wifly.dataMode();
           state = STATE_REGISTER_WITH_SERVER;
         }
@@ -514,7 +515,7 @@ void deviceUpdate() {
       // Normal operational mode
 
       DEBUG_PRINTLN_STATE(F("OPERATIONAL"))
-      if (millis () > nextPingMillis) {
+      if (millis() > nextPingMillis) {
         messenger.sendCmd(MSG_PING);
         nextPingMillis = millis() + PING_INTERVAL;
       }
@@ -530,6 +531,9 @@ void onServerRegisterResponse() {
   DEBUG_PRINTLN(F("* ServerRegisterResponse"))
   if (state == STATE_WAIT_FOR_REGISTER_WITH_SERVER_RESPONSE) {
     state = STATE_OPERATIONAL;
+    if (device->operationalCallback) {
+      (*device->operationalCallback)();
+    }
   }
 }
 
@@ -548,6 +552,49 @@ bool deviceIsOperational() {
   return state == STATE_OPERATIONAL;
 }
 
+/**
+ * Flush all data.
+ */
 void deviceWiflyFlush() {
   wifly.flush();
 }
+
+/**
+ * Enable the auto sleep mode of the WiFly module.
+ */
+void deviceWiflySleepAfter(int seconds) {
+  wifly.sendCommand("set s i 0x10\r", "OK");
+  snprintf(buf, BUF_LEN, "set s s %d\r", seconds);
+  wifly.sendCommand(buf, "OK");
+  wifly.save();
+  wifly.dataMode();
+}
+
+/**
+ * Wake up the WiFly module.
+ */
+void deviceWiflyWakeup() {
+  Serial.write('\r');
+  for (;;) {
+    wiflyReadline(buf, BUF_LEN);
+    if (strncmp(buf, "GW=", 3) == 0) {
+      return;
+    }
+  }
+}
+
+#ifdef DEBUG
+/**
+ * Read input from serial, write to WiFly
+ * Read input from WiFly, write to serial
+ */
+void deviceWiflyRepl() {
+  while (Serial.available() > 0) {
+    debug.write(Serial.read());
+  }
+
+  if (debug.available()) {
+    Serial.write(debug.read());
+  }
+}
+#endif
