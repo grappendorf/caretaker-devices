@@ -647,12 +647,7 @@ void loop() {
     }
 
     if (tempError) {
-      heater(false);
-      enterState(STATE_ERROR);
-      return;
-    } else if (state == STATE_ERROR) {
-      enterState(STATE_IDLE);
-      return;
+      enterMode(MODE_OFF, STATE_IDLE);
     }
 
     switch (mode) {
