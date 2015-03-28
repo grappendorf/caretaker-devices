@@ -11,16 +11,37 @@
 #include <Bounce/Bounce.h>
 #include <device.h>
 
-/** IO pin numbers */
-const uint8_t PIN_LED_RED = 5;
-const uint8_t PIN_LED_GREEN = 6;
-const uint8_t PIN_LED_BLUE = 9;
-const uint8_t PIN_BUTTON = 7;
+//#define BOARD_TYPE_SPOEKA
+#define BOARD_TYPE_DEMO_SHIELD
+
+// Configuration for the Spoeka board
+#ifdef BOARD_TYPE_SPOEKA
+#define DEVICE_NAME "Caretaker-RGBDimmer"
+#define DEVICE_DESCRIPTION "Dimmable RGB Light"
+const uint8_t LED_RED_PIN = 5;
+const uint8_t LED_GREEN_PIN = 6;
+const uint8_t LED_BLUE_PIN = 9;
+const uint8_t SYS_BUTTON_PIN = 7;
+const uint8_t INFO_LED_PIN = LED_RED_PIN;
+const uint8_t MANUAL_BUTTON_PIN = SYS_BUTTON_PIN;
+#endif
+
+// Configuration for the demo shield board
+#ifdef BOARD_TYPE_DEMO_SHIELD
+#define DEVICE_NAME "DemoShield RGB"
+#define DEVICE_DESCRIPTION "Arduino Demo Shield with RGB LED"
+const uint8_t LED_RED_PIN = 9;
+const uint8_t LED_GREEN_PIN = 11;
+const uint8_t LED_BLUE_PIN = 10;
+const uint8_t SYS_BUTTON_PIN = 12;
+const uint8_t INFO_LED_PIN = 13;
+const uint8_t MANUAL_BUTTON_PIN = SYS_BUTTON_PIN;
+#endif
 
 DeviceDescriptor device;
 
 /** Top switch button */
-Bounce button(PIN_BUTTON, 10);
+Bounce button(MANUAL_BUTTON_PIN, 10);
 
 /** Current RGB values */
 uint8_t red = 0;
@@ -37,18 +58,18 @@ void rgb_read();
  * Main system setup.
  */
 void setup() {
-  pinMode(PIN_LED_RED, OUTPUT);
-  pinMode(PIN_LED_GREEN, OUTPUT);
-  pinMode(PIN_LED_BLUE, OUTPUT);
-  pinMode(PIN_BUTTON, INPUT);
-  digitalWrite(PIN_LED_RED, LOW);
-  digitalWrite(PIN_LED_GREEN, LOW);
-  digitalWrite(PIN_LED_BLUE, LOW);
-  digitalWrite(PIN_BUTTON, HIGH);
-  device.type = "DimmerRgb";
-  device.description = "RGB Dimmer";
-  device.ledPin = PIN_LED_RED;
-  device.buttonPin = PIN_BUTTON;
+  pinMode(LED_RED_PIN, OUTPUT);
+  pinMode(LED_GREEN_PIN, OUTPUT);
+  pinMode(LED_BLUE_PIN, OUTPUT);
+  digitalWrite(LED_RED_PIN, LOW);
+  digitalWrite(LED_GREEN_PIN, LOW);
+  digitalWrite(LED_BLUE_PIN, LOW);
+  pinMode(SYS_BUTTON_PIN, INPUT);
+  digitalWrite(SYS_BUTTON_PIN, HIGH);
+  device.type = DEVICE_NAME;
+  device.description = DEVICE_DESCRIPTION;
+  device.ledPin = INFO_LED_PIN;
+  device.buttonPin = SYS_BUTTON_PIN;
   device.registerMessageHandlers = register_message_handlers;
   deviceInit(device);
 }
@@ -82,9 +103,9 @@ void rgb(uint8_t r, uint8_t g, uint8_t b) {
   red = r;
   green = g;
   blue = b;
-  analogWrite(PIN_LED_RED, red);
-  analogWrite(PIN_LED_GREEN, green);
-  analogWrite(PIN_LED_BLUE, blue);
+  analogWrite(LED_RED_PIN, red);
+  analogWrite(LED_GREEN_PIN, green);
+  analogWrite(LED_BLUE_PIN, blue);
   rgb_read();
 }
 
