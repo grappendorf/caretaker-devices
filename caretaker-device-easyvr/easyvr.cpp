@@ -10,15 +10,14 @@
 #include <Arduino.h>
 #include <SoftwareSerial/SoftwareSerial.h>
 #include <EasyVR/EasyVR.h>
-#include <XXBee/XXBee.h>
 #include <device.h>
 
 const int NUM_BUTTONS = 10;
 
-const int PIN_LED = 10;
-const int PIN_BUTTON = 11;
-const int PIN_XBEE_RXD = 0;
-const int PIN_XBEE_TXD = 1;
+const int INFO_LED_PIN = 10;
+const int SYS_BUTTON_PIN = 11;
+const int PIN_WIFLY_RXD = 0;
+const int PIN_WIFLY_TXD = 1;
 const int PIN_USB_RXD = 2;
 const int PIN_USB_TXD = 3;
 const int PIN_EASYVR_RXD = 5;
@@ -55,8 +54,8 @@ void send_server_register_params();
  * Main system setup.
  */
 void setup() {
-  pinMode(PIN_LED, OUTPUT);
-  digitalWrite(PIN_LED, HIGH);
+  pinMode(INFO_LED_PIN, OUTPUT);
+  digitalWrite(INFO_LED_PIN, HIGH);
   delay(500);
 
   easyvrSerial.begin(EASYVR_BAUD_RATE);
@@ -68,14 +67,14 @@ void setup() {
 
 //	usbSerial.begin(USB_BAUD_RATE);
 
-  digitalWrite(PIN_LED, LOW);
+  digitalWrite(INFO_LED_PIN, LOW);
   easyvr.playSound(2, EasyVR::VOL_DOUBLE);
   easyvr.recognizeCommand(0);
 
   device.type = "EasyVr";
   device.description = "EadyVr Speech Interface";
-  device.ledPin = PIN_LED;
-  device.buttonPin = PIN_BUTTON;
+  device.ledPin = INFO_LED_PIN;
+  device.buttonPin = SYS_BUTTON_PIN;
   device.registerMessageHandlers = register_message_handlers;
   device.sendServerRegisterParams = send_server_register_params;
   deviceInit(device);
@@ -148,9 +147,9 @@ void register_message_handlers() {
 void error(int num) {
   for (;;) {
     for (int i = 0; i < num; ++i) {
-      digitalWrite(PIN_LED, HIGH);
+      digitalWrite(INFO_LED_PIN, HIGH);
       delay(250);
-      digitalWrite(PIN_LED, LOW);
+      digitalWrite(INFO_LED_PIN, LOW);
       delay(250);
     }
     delay(1000);
@@ -161,9 +160,9 @@ void error(int num) {
  * Blink the LED.
  */
 void blinkLed() {
-  digitalWrite(PIN_LED, HIGH);
+  digitalWrite(INFO_LED_PIN, HIGH);
   delay(50);
-  digitalWrite(PIN_LED, LOW);
+  digitalWrite(INFO_LED_PIN, LOW);
 }
 
 void sendButtonState(uint8_t button) {
