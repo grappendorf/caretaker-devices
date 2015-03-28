@@ -8,6 +8,7 @@ log/*.log
 **/*.elf
 **/*.hex
 **/*.map
+!demo-shields/**/*.hex
 
 # IntelliJ
 atlassian-ide-plugin.xml
