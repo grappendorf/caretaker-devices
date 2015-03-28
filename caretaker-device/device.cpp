@@ -10,7 +10,6 @@
 #include <Arduino.h>
 #include <WiFi_Shield/WiFly.h>
 #include <EEPROMEx/EEPROMex.h>
-#include <CmdMessenger/CmdMessenger.h>
 #include "device.h"
 
 #ifdef DEBUG
