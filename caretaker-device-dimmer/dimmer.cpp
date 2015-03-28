@@ -20,7 +20,7 @@
 /** Digital I/O pin numbers */
 const int PIN_LED = 8;
 const int PIN_INT0 = 2;
-const int PIN_BUTTON = 7;
+const int SYS_BUTTON_PIN = 7;
 const int PIN_TRIAC = 19;
 #define PORT_TRIAC PORTC
 #define BIT_TRIAC PC5
@@ -36,7 +36,7 @@ unsigned long ledOffMillis = 0;
 unsigned long ledNextMillis = 0;
 
 /** Key debouncer */
-Bounce key(PIN_BUTTON, 10);
+Bounce key(SYS_BUTTON_PIN, 10);
 
 /**
  * Maximum interval during which the key must be pressed and released to be
@@ -99,14 +99,14 @@ void setup() {
   device.type = "Dimmer";
   device.description = "Dimmer";
   device.ledPin = PIN_LED;
-  device.buttonPin = PIN_BUTTON;
+  device.buttonPin = SYS_BUTTON_PIN;
   device.registerMessageHandlers = register_message_handlers;
   deviceInit(device);
 
   pinMode(PIN_LED, OUTPUT);
   pinMode(PIN_TRIAC, OUTPUT);
-  pinMode(PIN_BUTTON, INPUT);
-  digitalWrite(PIN_BUTTON, HIGH);
+  pinMode(SYS_BUTTON_PIN, INPUT);
+  digitalWrite(SYS_BUTTON_PIN, HIGH);
   configureINT0();
   configureTimer1();
 }
