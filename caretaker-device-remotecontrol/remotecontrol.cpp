@@ -10,6 +10,10 @@
 /**
  * This code uses 11 pin change interrupt pins. So ensure that the value of
  * MAX_PIN_CHANGE_PINS is at least set to 11 in PinChangeInt.h.
+ *
+ * This code doesn't compile if DEBUG is enabled in device.h.
+ * SoftwareSerial conflicts with PinChangeInt because SoftwareSerial also
+ * uses pin change interrupts.
  */
 
 /**
@@ -29,160 +33,178 @@
 #include <device.h>
 #include <Bounce/Bounce.h>
 
-/** IO Pins */
-const uint8_t WIFLY_SLEEP = 2;
-const uint8_t LED_RED = 19;
-const uint8_t LED_GREEN = 18;
-const uint8_t LED_YELLOW = 17;
-const uint8_t BUTTON_01 = 3;
-const uint8_t BUTTON_02 = 4;
-const uint8_t BUTTON_03 = 5;
-const uint8_t BUTTON_04 = 6;
-const uint8_t BUTTON_05 = 7;
-const uint8_t BUTTON_06 = 16;
-const uint8_t BUTTON_07 = 15;
-const uint8_t BUTTON_08 = 14;
-const uint8_t BUTTON_09 = 10;
-const uint8_t BUTTON_10 = 9;
-const uint8_t LOW_BAT = 8;
+//#define BOARD_TYPE_REMOTE_CONTROL
+#define BOARD_TYPE_DEMO_SHIELD
 
-/** Some LED constants */
-enum Led {
-  NONE = 0, YELLOW = 1, GREEN = 2, RED = 4, ALL = 7
-};
+// Configuration for the remote control board
+#ifdef BOARD_TYPE_REMOTE_CONTROL
+#define DEVICE_NAME "Caretaker-RemoteControl"
+#define DEVICE_DESCRIPTION "10 button Remote Control"
+const uint8_t LED_RED_PIN = 19;
+const uint8_t LED_GREEN_PIN = 18;
+const uint8_t LED_YELLOW_PIN = 17;
+const uint8_t BUTTON_01_PIN = 3;
+const uint8_t BUTTON_02_PIN = 4;
+const uint8_t BUTTON_03_PIN = 5;
+const uint8_t BUTTON_04_PIN = 6;
+const uint8_t BUTTON_05_PIN = 7;
+const uint8_t BUTTON_06_PIN = 16;
+const uint8_t BUTTON_07_PIN = 15;
+const uint8_t BUTTON_08_PIN = 14;
+const uint8_t BUTTON_09_PIN = 10;
+const uint8_t BUTTON_10_PIN = 9;
+const uint8_t LOW_BAT_PIN = 8;
+const uint8_t WIFLY_SLEEP_PIN = 2;
+const uint8_t INFO_LED_PIN = LED_YELLOW_PIN;
+const uint8_t SYS_BUTTON_PIN = BUTTON_01_PIN;
+const uint8_t AWAKE_LED_PIN = LED_GREEN_PIN;
+const uint8_t LOW_POWER_LED_PIN = LED_RED_PIN;
+const uint8_t NUM_BUTTONS = 10;
+#define ENABLE_LOW_POWER
+#endif
+
+// Configuration the demo shield board
+#ifdef BOARD_TYPE_DEMO_SHIELD
+#define DEVICE_NAME "DemoShield-Buttons"
+#define DEVICE_DESCRIPTION "Arduino Demo Shield with 4 buttons"
+const uint8_t BUTTON_01_PIN = 11;
+const uint8_t BUTTON_02_PIN = 9;
+const uint8_t BUTTON_03_PIN = 10;
+const uint8_t BUTTON_04_PIN = 8;
+const uint8_t BUTTON_05_PIN = 0;
+const uint8_t BUTTON_06_PIN = 0;
+const uint8_t BUTTON_07_PIN = 0;
+const uint8_t BUTTON_08_PIN = 0;
+const uint8_t BUTTON_09_PIN = 0;
+const uint8_t BUTTON_10_PIN = 0;
+const uint8_t INFO_LED_PIN = 13;
+const uint8_t SYS_BUTTON_PIN = 12;
+const uint8_t NUM_BUTTONS = 4;
+#endif
 
 /** Buttons */
-uint8_t buttonPins[] = { BUTTON_01, BUTTON_02, BUTTON_03, BUTTON_04, BUTTON_05, BUTTON_06, BUTTON_07, BUTTON_08,
-    BUTTON_09, BUTTON_10 };
+uint8_t buttonPins[] = { BUTTON_01_PIN, BUTTON_02_PIN, BUTTON_03_PIN, BUTTON_04_PIN, BUTTON_05_PIN, BUTTON_06_PIN, BUTTON_07_PIN, BUTTON_08_PIN,
+    BUTTON_09_PIN, BUTTON_10_PIN };
 
-Bounce buttons[] = { Bounce(BUTTON_01, 5), Bounce(BUTTON_02, 5), Bounce(BUTTON_03, 5), Bounce(BUTTON_04, 5), Bounce(
-    BUTTON_05, 5), Bounce(BUTTON_06, 5), Bounce(BUTTON_07, 5), Bounce(BUTTON_08, 5), Bounce(BUTTON_09, 5), Bounce(
-    BUTTON_10, 5) };
+Bounce buttons[] = { Bounce(BUTTON_01_PIN, 5), Bounce(BUTTON_02_PIN, 5), Bounce(BUTTON_03_PIN, 5), Bounce(BUTTON_04_PIN, 5), Bounce(
+    BUTTON_05_PIN, 5), Bounce(BUTTON_06_PIN, 5), Bounce(BUTTON_07_PIN, 5), Bounce(BUTTON_08_PIN, 5), Bounce(BUTTON_09_PIN, 5), Bounce(
+    BUTTON_10_PIN, 5) };
 
-const uint8_t NUM_BUTTONS = sizeof(buttonPins) / sizeof(buttonPins[0]);
+/** BLink duration of the info LED */
+const unsigned long INFO_LED_BLINK_MILLIS = 250;
 
+/** When to switch off the info LED */
+unsigned long infoLedOffMillis;
 
-/** States of the device mode state engine */
-enum State {
-  POWER_UP, NORMAL_MODE, LOW_BATTERY
-};
+/** Device information. */
+DeviceDescriptor device;
 
-/** Current device mode state */
-State state = POWER_UP;
+void send_server_register_params();
+void buttonChanged();
+void deviceOperationalCallback();
 
+#ifdef ENABLE_LOW_POWER
 /** How long the device stays awake */
 const unsigned long AWAKE_TIMEOUT_MILLIS = 20 * 1000;
 
 /** When to enter the sleep mode */
 unsigned long enterSleepModeMillis;
 
-/** BLink duration of the yellow LED */
-const unsigned long YELLOW_LED_BLINK_MILLIS = 250;
-
-/** When to switch off the yellow LED */
-unsigned long yellowLedOffMillis;
-
-/** Device information. */
-DeviceDescriptor device;
-
-void send_server_register_params();
 bool isLowBattery();
-void buttonChanged();
-void deviceOperationalCallback();
+#endif
 
 /**
  * Main system setup.
  */
 void setup() {
-  device.type = "RemoteControl";
-  device.description = "Remote Control";
-  device.ledPin = 13;
-  device.buttonPin = 4;
+  device.type = DEVICE_NAME;
+  device.description = DEVICE_DESCRIPTION;
+  device.ledPin = INFO_LED_PIN;
+  device.buttonPin = SYS_BUTTON_PIN;
   device.sendServerRegisterParams = send_server_register_params;
   device.operationalCallback = deviceOperationalCallback;
   deviceInit(device);
 
-  pinMode(LED_RED, OUTPUT);
-  pinMode(LED_YELLOW, OUTPUT);
-  pinMode(LED_GREEN, OUTPUT);
-  digitalWrite(LED_RED, LOW);
-  digitalWrite(LED_YELLOW, LOW);
-  digitalWrite(LED_GREEN, LOW);
-  pinMode(BUTTON_01, INPUT);
-  digitalWrite(BUTTON_01, HIGH);
+  pinMode(INFO_LED_PIN, OUTPUT);
+  digitalWrite(INFO_LED_PIN, LOW);
   for (uint8_t i = 0; i < NUM_BUTTONS; ++i) {
     pinMode(buttonPins[i], INPUT);
     digitalWrite(buttonPins[i], HIGH);
     PCattachInterrupt(buttonPins[i], buttonChanged, CHANGE);
   }
-  pinMode(WIFLY_SLEEP, INPUT);
+
+#ifdef ENABLE_LOW_POWER
+  pinMode(AWAKE_LED_PIN, OUTPUT);
+  digitalWrite(AWAKE_LED_PIN, LOW);
+  pinMode(LOW_POWER_LED_PIN, OUTPUT);
+  digitalWrite(LOW_POWER_LED_PIN, LOW);
+  pinMode(WIFLY_SLEEP_PIN, INPUT);
+  pinMode(LOW_BAT_PIN, INPUT);
   set_sleep_mode(SLEEP_MODE_PWR_DOWN);
   power_adc_disable ();
   power_spi_disable ();
   power_twi_disable ();
   power_timer1_disable ();
   power_timer2_disable ();
+#endif
 }
 
 /**
  * Main system loop.
  */
 void loop() {
-  if (isLowBattery()) {
-    state = LOW_BATTERY;
-  }
+#ifdef ENABLE_LOW_POWER
+  digitalWrite(LOW_POWER_LED_PIN, isLowBattery() ? HIGH : LOW);
+#endif
 
-  switch (state) {
-    case POWER_UP:
-      state = NORMAL_MODE;
-      break;
+  deviceUpdate();
 
-    case LOW_BATTERY:
-      digitalWrite(LED_RED, HIGH);
-      break;
+  if (deviceIsOperational()) {
+#ifdef ENABLE_LOW_POWER
+    if (millis() > enterSleepModeMillis) {
+      sleep_enable()
+      ;
+      sleep_mode()
+      ;
+      sleep_disable()
+      ;
+    }
+    digitalWrite(AWAKE_LED_PIN, digitalRead(WIFLY_SLEEP_PIN));
+#endif
 
-    case NORMAL_MODE:
-      deviceUpdate();
+    if (millis() > infoLedOffMillis) {
+      digitalWrite(INFO_LED_PIN, LOW);
+    }
 
-      if (deviceIsOperational()) {
-        if (millis() > enterSleepModeMillis) {
-          sleep_enable()
-          ;
-          sleep_mode()
-          ;
-          sleep_disable()
-          ;
+    for (uint8_t i = 0; i < NUM_BUTTONS; ++i) {
+      buttons[i].update();
+
+      if (buttons[i].fallingEdge() || buttons[i].risingEdge()) {
+
+        digitalWrite(INFO_LED_PIN, HIGH);
+        infoLedOffMillis = millis() + INFO_LED_BLINK_MILLIS;
+
+        int state = buttons[i].read();
+
+#ifdef ENABLE_LOW_POWER
+        bool wiflySleeping = digitalRead(WIFLY_SLEEP_PIN) == LOW;
+        if (wiflySleeping) {
+          deviceWiflyWakeup();
         }
+#endif
 
-        digitalWrite(LED_GREEN, digitalRead(WIFLY_SLEEP));
+        device.messenger->sendCmdStart(MSG_BUTTON_STATE);
+        device.messenger->sendCmdArg(i);
+        device.messenger->sendCmdArg(state == LOW ? 1 : 0);
+        device.messenger->sendCmdEnd();
 
-        if (millis() > yellowLedOffMillis) {
-          digitalWrite(LED_YELLOW, LOW);
+#ifdef ENABLE_LOW_POWER
+        if (wiflySleeping) {
+          delay(100);
         }
-
-        for (uint8_t i = 0; i < NUM_BUTTONS; ++i) {
-          buttons[i].update();
-
-          if (buttons[i].fallingEdge() || buttons[i].risingEdge()) {
-            digitalWrite(LED_YELLOW, HIGH);
-            yellowLedOffMillis = millis() + YELLOW_LED_BLINK_MILLIS;
-            int state = buttons[i].read();
-            bool wiflySleeping = digitalRead(WIFLY_SLEEP) == LOW;
-            if (wiflySleeping) {
-              deviceWiflyWakeup();
-            }
-            device.messenger->sendCmdStart(MSG_BUTTON_STATE);
-            device.messenger->sendCmdArg(i);
-            device.messenger->sendCmdArg(state == LOW ? 1 : 0);
-            device.messenger->sendCmdEnd();
-            if (wiflySleeping) {
-              delay(100);
-            }
-          }
-        }
+#endif
       }
-
-      break;
+    }
   }
 }
 
@@ -198,21 +220,27 @@ void send_server_register_params() {
 /**
  * Check for low battery state and inform the user.
  */
+#ifdef ENABLE_LOW_POWER
 bool isLowBattery() {
-  return digitalRead(LOW_BAT) == LOW;
+  return digitalRead(LOW_BAT_PIN) == LOW;
 }
+#endif
 
 /**
  * This is the interrupt routine, triggered by the pin change interrupt.
  */
 void buttonChanged() {
+#ifdef ENABLE_LOW_POWER
   enterSleepModeMillis = millis() + AWAKE_TIMEOUT_MILLIS;
+#endif
 }
 
 /**
  * Called when the device enters the operational state.
  */
 void deviceOperationalCallback() {
+#ifdef ENABLE_LOW_POWER
   deviceWiflySleepAfter(10);
   enterSleepModeMillis = millis() + AWAKE_TIMEOUT_MILLIS;
+#endif
 }
