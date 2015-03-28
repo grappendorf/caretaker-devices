@@ -11,14 +11,21 @@
 #include <Bounce/Bounce.h>
 #include <device.h>
 
-#define NUM_SWITCHES 1
+#define BOARD_TYPE_DEMO_SHIELD
 
-#define LED_PIN 13
-#define BUTTON_PIN 4
+// Pin assignments for the demo shield board
+#ifdef BOARD_TYPE_DEMO_SHIELD
+const uint8_t INFO_LED_PIN = 13;
+const uint8_t SYS_BUTTON_PIN = 12;
+const uint8_t SWITCH_PIN = 9;
+const uint8_t MAUNAL_BUTTON_PIN = 8;
+#endif
+
+const uint8_t NUM_SWITCHES = 1;
 
 DeviceDescriptor device;
 
-Bounce button(BUTTON_PIN, 5);
+Bounce button(MAUNAL_BUTTON_PIN, 5);
 
 void send_server_register_params();
 void register_message_handlers();
@@ -31,11 +38,16 @@ void switch_write();
 void setup() {
   device.type = "Switch";
   device.description = "Single Port Switch";
-  device.ledPin = 13;
-  device.buttonPin = 4;
+  device.ledPin = INFO_LED_PIN;
+  device.buttonPin = SYS_BUTTON_PIN;
   device.registerMessageHandlers = register_message_handlers;
   device.sendServerRegisterParams = send_server_register_params;
   deviceInit(device);
+
+  pinMode(MAUNAL_BUTTON_PIN, INPUT);
+  digitalWrite(MAUNAL_BUTTON_PIN, HIGH);
+
+  pinMode(SWITCH_PIN, OUTPUT);
 }
 
 /**
@@ -46,7 +58,7 @@ void loop() {
   if (deviceIsOperational()) {
     button.update();
     if (button.fallingEdge()) {
-      digitalWrite(LED_PIN, digitalRead(LED_PIN) == HIGH ? LOW : HIGH);
+      digitalWrite(SWITCH_PIN, digitalRead(SWITCH_PIN) == HIGH ? LOW : HIGH);
       switch_read();
     }
   }
@@ -75,7 +87,7 @@ void register_message_handlers() {
 void switch_read() {
   device.messenger->sendCmdStart(MSG_SWITCH_STATE);
   device.messenger->sendCmdArg(0);
-  device.messenger->sendCmdArg(digitalRead(device.ledPin));
+  device.messenger->sendCmdArg(digitalRead(SWITCH_PIN));
   device.messenger->sendCmdEnd();
 }
 
@@ -87,27 +99,27 @@ void switch_write() {
   int mode = device.messenger->readIntArg();
   switch (mode) {
     case WRITE_DEFAULT:
-      digitalWrite(device.ledPin, LOW);
+      digitalWrite(SWITCH_PIN, LOW);
       break;
     case WRITE_ABSOLUTE:
-      digitalWrite(device.ledPin, device.messenger->readIntArg() != 0 ? HIGH : LOW);
+      digitalWrite(SWITCH_PIN, device.messenger->readIntArg() != 0 ? HIGH : LOW);
       break;
     case WRITE_INCREMENT:
       device.messenger->next(); // Ignore increment value
-      digitalWrite(device.ledPin, HIGH);
+      digitalWrite(SWITCH_PIN, HIGH);
       break;
     case WRITE_INCREMENT_DEFAULT:
-      digitalWrite(device.ledPin, HIGH);
+      digitalWrite(SWITCH_PIN, HIGH);
       break;
     case WRITE_DECREMENT:
       device.messenger->next(); // Ignore decrement value
-      digitalWrite(device.ledPin, LOW);
+      digitalWrite(SWITCH_PIN, LOW);
       break;
     case WRITE_DECREMENT_DEFAULT:
-      digitalWrite(device.ledPin, LOW);
+      digitalWrite(SWITCH_PIN, LOW);
       break;
     case WRITE_TOGGLE:
-      digitalWrite(device.ledPin, digitalRead(device.ledPin) == LOW ? HIGH : LOW);
+      digitalWrite(SWITCH_PIN, digitalRead(SWITCH_PIN) == LOW ? HIGH : LOW);
       break;
     default:
       break;
