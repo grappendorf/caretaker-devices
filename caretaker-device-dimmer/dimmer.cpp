@@ -18,9 +18,9 @@
 #include <device.h>
 
 /** Digital I/O pin numbers */
-const int PIN_LED = 8;
-const int PIN_INT0 = 2;
+const int INFO_LED_PIN = 8;
 const int SYS_BUTTON_PIN = 7;
+const int PIN_INT0 = 2;
 const int PIN_TRIAC = 19;
 #define PORT_TRIAC PORTC
 #define BIT_TRIAC PC5
@@ -98,12 +98,12 @@ void pwm_write();
 void setup() {
   device.type = "Dimmer";
   device.description = "Dimmer";
-  device.ledPin = PIN_LED;
+  device.ledPin = INFO_LED_PIN;
   device.buttonPin = SYS_BUTTON_PIN;
   device.registerMessageHandlers = register_message_handlers;
   deviceInit(device);
 
-  pinMode(PIN_LED, OUTPUT);
+  pinMode(INFO_LED_PIN, OUTPUT);
   pinMode(PIN_TRIAC, OUTPUT);
   pinMode(SYS_BUTTON_PIN, INPUT);
   digitalWrite(SYS_BUTTON_PIN, HIGH);
@@ -153,7 +153,7 @@ void blinkLED() {
   if (millis() > ledNextMillis) {
     ledOffMillis = millis() + LED_BLINK_DURATION;
     ledNextMillis = ledOffMillis + LED_BLINK_DELAY;
-    digitalWrite(PIN_LED, HIGH);
+    digitalWrite(INFO_LED_PIN, HIGH);
   }
 }
 
@@ -162,7 +162,7 @@ void blinkLED() {
  */
 void calmDownLED() {
   if (millis() > ledOffMillis) {
-    digitalWrite(PIN_LED, LOW);
+    digitalWrite(INFO_LED_PIN, LOW);
   }
 }
 
