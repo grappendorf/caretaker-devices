@@ -38,7 +38,6 @@
 
 // Configuration for the remote control board
 #ifdef BOARD_TYPE_REMOTE_CONTROL
-#define DEVICE_NAME "Caretaker-RemoteControl"
 #define DEVICE_DESCRIPTION "10 button Remote Control"
 const uint8_t LED_RED_PIN = 19;
 const uint8_t LED_GREEN_PIN = 18;
@@ -65,8 +64,7 @@ const uint8_t NUM_BUTTONS = 10;
 
 // Configuration the demo shield board
 #ifdef BOARD_TYPE_DEMO_SHIELD
-#define DEVICE_NAME "DemoShield-Buttons"
-#define DEVICE_DESCRIPTION "Arduino Demo Shield with 4 buttons"
+#define DEVICE_DESCRIPTION "4 buttons demo shield"
 const uint8_t BUTTON_01_PIN = 11;
 const uint8_t BUTTON_02_PIN = 9;
 const uint8_t BUTTON_03_PIN = 10;
@@ -117,7 +115,7 @@ bool isLowBattery();
  * Main system setup.
  */
 void setup() {
-  device.type = DEVICE_NAME;
+  device.type = "RemoteControl";
   device.description = DEVICE_DESCRIPTION;
   device.ledPin = INFO_LED_PIN;
   device.buttonPin = SYS_BUTTON_PIN;

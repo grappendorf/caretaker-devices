@@ -16,7 +16,6 @@
 
 // Configuration for the Spoeka board
 #ifdef BOARD_TYPE_SPOEKA
-#define DEVICE_NAME "Caretaker-RGBDimmer"
 #define DEVICE_DESCRIPTION "Dimmable RGB Light"
 const uint8_t LED_RED_PIN = 5;
 const uint8_t LED_GREEN_PIN = 6;
@@ -28,8 +27,7 @@ const uint8_t MANUAL_BUTTON_PIN = SYS_BUTTON_PIN;
 
 // Configuration for the demo shield board
 #ifdef BOARD_TYPE_DEMO_SHIELD
-#define DEVICE_NAME "DemoShield RGB"
-#define DEVICE_DESCRIPTION "Arduino Demo Shield with RGB LED"
+#define DEVICE_DESCRIPTION "RGB LED demo shield"
 const uint8_t LED_RED_PIN = 9;
 const uint8_t LED_GREEN_PIN = 11;
 const uint8_t LED_BLUE_PIN = 10;
@@ -66,7 +64,7 @@ void setup() {
   digitalWrite(LED_BLUE_PIN, LOW);
   pinMode(SYS_BUTTON_PIN, INPUT);
   digitalWrite(SYS_BUTTON_PIN, HIGH);
-  device.type = DEVICE_NAME;
+  device.type = "DimmerRgb";
   device.description = DEVICE_DESCRIPTION;
   device.ledPin = INFO_LED_PIN;
   device.buttonPin = SYS_BUTTON_PIN;

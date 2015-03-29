@@ -18,8 +18,7 @@
 
 // Pin assignments for the demo shield board
 #ifdef BOARD_TYPE_DEMO_SHIELD
-#define DEVICE_NAME "DemoShield-Sensoes"
-#define DEVICE_DESCRIPTION "Arduino Demo Shield with Temp and Brightness"
+#define DEVICE_DESCRIPTION "Temperature and brightness sensors demo shield"
 const uint8_t INFO_LED_PIN = 13;
 const uint8_t SYS_BUTTON_PIN = 12;
 const uint8_t ONEWIRE_PIN = 8;
@@ -45,7 +44,7 @@ void switch_read();
  * System setup.
  */
 void setup() {
-  device.type = DEVICE_NAME;
+  device.type = "Sensor";
   device.description = DEVICE_DESCRIPTION;
   device.ledPin = INFO_LED_PIN;
   device.buttonPin = SYS_BUTTON_PIN;
