@@ -395,10 +395,6 @@ void deviceUpdate() {
         state = STATE_CONFIG_TIMEOUT;
         break;
       }
-#ifdef DEBUG
-      // Always use the same uuid for debugging
-      strcpy(deviceUuid, "89dd4596-3356-4c7a-9876-e3af6ea68e15");
-#endif
       if (!(wiflyReadline(deviceName, DEVICE_NAME_MAX_LEN))) {
         state = STATE_CONFIG_TIMEOUT;
         break;
