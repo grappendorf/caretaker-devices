@@ -36,6 +36,10 @@
 #define DEBUG_TXD_PIN 3
 #define DEBUG_BAUDRATE 9600
 
+#if (defined WIFLY_SERIAL_SOFTWARE) || (defined DEBUG && defined DEBUG_SERIAL_SOFTWARE)
+#include <SoftwareSerial/SoftwareSerial.h>
+#endif
+
 typedef struct _DeviceDescriptor {
   const char* type;
   const char* description;
@@ -56,7 +60,6 @@ void deviceWiflyWakeup();
 void deviceWiflyRepl();
 
 #ifdef DEBUG
-#include <SoftwareSerial/SoftwareSerial.h>
 extern Stream& debug;
 #define DEBUG_PRINT(s) debug.print(s);
 #define DEBUG_PRINTLN(s) debug.println(s);
