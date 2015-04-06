@@ -33,8 +33,8 @@
 #include <device.h>
 #include <Bounce/Bounce.h>
 
-//#define BOARD_TYPE_REMOTE_CONTROL
-#define BOARD_TYPE_DEMO_SHIELD
+#define BOARD_TYPE_REMOTE_CONTROL
+//#define BOARD_TYPE_DEMO_SHIELD
 
 // Configuration for the remote control board
 #ifdef BOARD_TYPE_REMOTE_CONTROL
@@ -103,7 +103,7 @@ void deviceOperationalCallback();
 
 #ifdef ENABLE_LOW_POWER
 /** How long the device stays awake */
-const unsigned long AWAKE_TIMEOUT_MILLIS = 20 * 1000;
+const unsigned long AWAKE_TIMEOUT_SECONDS = 3;
 
 /** When to enter the sleep mode */
 unsigned long enterSleepModeMillis;
@@ -229,7 +229,7 @@ bool isLowBattery() {
  */
 void buttonChanged() {
 #ifdef ENABLE_LOW_POWER
-  enterSleepModeMillis = millis() + AWAKE_TIMEOUT_MILLIS;
+  enterSleepModeMillis = millis() + (AWAKE_TIMEOUT_SECONDS + 2) * 1000;
 #endif
 }
 
@@ -238,7 +238,7 @@ void buttonChanged() {
  */
 void deviceOperationalCallback() {
 #ifdef ENABLE_LOW_POWER
-  deviceWiflySleepAfter(10);
-  enterSleepModeMillis = millis() + AWAKE_TIMEOUT_MILLIS;
+  deviceWiflySleepAfter(AWAKE_TIMEOUT_SECONDS);
+  enterSleepModeMillis = millis() + (AWAKE_TIMEOUT_SECONDS + 2) * 1000;
 #endif
 }
