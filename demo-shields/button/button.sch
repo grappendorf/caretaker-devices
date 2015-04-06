@@ -6873,7 +6873,7 @@ Source: www.kingbright.com</description>
 <sheet>
 <plain>
 <text x="163.83" y="31.75" size="2.54" layer="94">Dirk Grappendorf</text>
-<text x="251.46" y="7.62" size="2.54" layer="94">1</text>
+<text x="251.46" y="7.62" size="2.54" layer="94">2</text>
 <text x="163.83" y="27.94" size="2.54" layer="94">grappendorf.net</text>
 <text x="163.83" y="24.13" size="2.54" layer="94">CERN Open Hardware License 1.1</text>
 </plain>
@@ -6990,14 +6990,14 @@ Source: www.kingbright.com</description>
 </net>
 <net name="RXD" class="0">
 <segment>
-<pinref part="DIGITAL1" gate="A" pin="1"/>
-<wire x1="200.66" y1="132.08" x2="187.96" y2="132.08" width="0.1524" layer="91"/>
-<label x="187.96" y="132.08" size="1.27" layer="95" rot="R180" xref="yes"/>
-</segment>
-<segment>
 <pinref part="WIFLY" gate="G$1" pin="DOUT"/>
 <wire x1="45.72" y1="149.86" x2="38.1" y2="149.86" width="0.1524" layer="91"/>
 <label x="38.1" y="149.86" size="1.27" layer="95" rot="R180" xref="yes"/>
+</segment>
+<segment>
+<pinref part="DIGITAL1" gate="A" pin="3"/>
+<wire x1="200.66" y1="127" x2="187.96" y2="127" width="0.1524" layer="91"/>
+<label x="187.96" y="127" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="+3V3" class="0">
@@ -7015,15 +7015,15 @@ Source: www.kingbright.com</description>
 </net>
 <net name="TXD" class="0">
 <segment>
-<pinref part="DIGITAL1" gate="A" pin="2"/>
-<wire x1="200.66" y1="129.54" x2="187.96" y2="129.54" width="0.1524" layer="91"/>
-<label x="187.96" y="129.54" size="1.016" layer="95" rot="R180" xref="yes"/>
-</segment>
-<segment>
 <pinref part="R1" gate="G$1" pin="2"/>
 <wire x1="25.4" y1="160.02" x2="25.4" y2="162.56" width="0.1524" layer="91"/>
 <wire x1="25.4" y1="162.56" x2="17.78" y2="162.56" width="0.1524" layer="91"/>
 <label x="17.78" y="162.56" size="1.27" layer="95" rot="R180" xref="yes"/>
+</segment>
+<segment>
+<pinref part="DIGITAL1" gate="A" pin="4"/>
+<wire x1="200.66" y1="124.46" x2="187.96" y2="124.46" width="0.1524" layer="91"/>
+<label x="187.96" y="124.46" size="1.27" layer="95" rot="R180" xref="yes"/>
 </segment>
 </net>
 <net name="N$1" class="0">
