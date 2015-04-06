@@ -13,7 +13,11 @@
 #ifndef _DEVICE_H
 #define _DEVICE_H
 
-// Define the WiFly serial speed
+// The WiFly serial device
+#define WIFLY_SERIAL_HARDWARE
+//#define WIFLY_SERIAL_SOFTWARE
+#define WIFLY_RXD_PIN 2
+#define WIFLY_TXD_PIN 3
 #define WIFLY_BAUDRATE 57600
 
 // Define to set a non standard (55555) broadcast port
@@ -24,6 +28,13 @@
 
 // Define to enable debug logging
 //#define DEBUG
+
+// The debug serial device
+//#define DEBUG_SERIAL_HARDWARE
+#define DEBUG_SERIAL_SOFTWARE
+#define DEBUG_RXD_PIN 2
+#define DEBUG_TXD_PIN 3
+#define DEBUG_BAUDRATE 9600
 
 typedef struct _DeviceDescriptor {
   const char* type;
@@ -46,7 +57,7 @@ void deviceWiflyRepl();
 
 #ifdef DEBUG
 #include <SoftwareSerial/SoftwareSerial.h>
-extern SoftwareSerial debug;
+extern Stream& debug;
 #define DEBUG_PRINT(s) debug.print(s);
 #define DEBUG_PRINTLN(s) debug.println(s);
 #define DEBUG_PRINTLN_STATE(s) if (state != debugLastState) { \

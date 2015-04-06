@@ -14,7 +14,12 @@
 
 #ifdef DEBUG
 int debugLastState = -1;
-SoftwareSerial debug(2, 3);
+#ifdef DEBUG_SERIAL_HARDWARE
+HardwareSerial& debug_serial = Serial;
+#else
+SoftwareSerial debug_serial(DEBUG_RXD_PIN, DEBUG_TXD_PIN);
+#endif
+Stream& debug = debug_serial;
 #endif
 
 #define MAGIC_NUMBER 0xCAFE
@@ -38,7 +43,12 @@ char phrase[PHRASE_MAX_LEN + 1];
 #define EEPROM_SSID_ADDR          (EEPROM_DEVICE_NAME_ADDR + sizeof(deviceName))
 #define EEPROM_PHRASE_ADDR        (EEPROM_SSID_ADDR + sizeof(ssid))
 
-static WiFly wifly(Serial);
+#ifdef WIFLY_SERIAL_HARDWARE
+HardwareSerial& wifly_serial = Serial;
+#else
+SoftwareSerial wifly_serial(WIFLY_RXD_PIN, WIFLY_TXD_PIN);
+#endif
+static WiFly wifly(wifly_serial);
 
 static CmdMessenger messenger = CmdMessenger(wifly);
 
@@ -170,7 +180,7 @@ void activateBlinkPattern(int* _blinkPattern) {
  */
 void deviceInit(DeviceDescriptor& descriptor) {
 #ifdef DEBUG
-  debug.begin(9600);
+  debug_serial.begin(DEBUG_BAUDRATE);
 #endif
 
   EEPROM.setMemPool(0, EEPROM_SIZE);
@@ -195,7 +205,7 @@ void deviceInit(DeviceDescriptor& descriptor) {
     (*device->registerMessageHandlers)();
   }
 
-  Serial.begin(WIFLY_BAUDRATE);
+  wifly_serial.begin(WIFLY_BAUDRATE);
 }
 
 /**
@@ -569,7 +579,7 @@ void deviceWiflySleepAfter(int seconds) {
  * Wake up the WiFly module.
  */
 void deviceWiflyWakeup() {
-  Serial.write('\r');
+  wifly_serial.write('\r');
   for (;;) {
     wiflyReadline(buf, BUF_LEN);
     if (strncmp(buf, "GW=", 3) == 0) {
@@ -584,12 +594,12 @@ void deviceWiflyWakeup() {
  * Read input from WiFly, write to serial
  */
 void deviceWiflyRepl() {
-  while (Serial.available() > 0) {
-    debug.write(Serial.read());
+  while (wifly_serial.available() > 0) {
+    debug_serial.write(wifly_serial.read());
   }
 
-  if (debug.available()) {
-    Serial.write(debug.read());
+  if (debug_serial.available()) {
+    wifly_serial.write(debug_serial.read());
   }
 }
 #endif
