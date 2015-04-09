@@ -1,0 +1,6 @@
+build/*.[oda]
+build/*.lss
+build/*.eep
+build/*.elf
+build/*.hex
+build/*.map

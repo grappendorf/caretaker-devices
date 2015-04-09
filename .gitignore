@@ -2,12 +2,6 @@
 *.s#?
 *.b#?
 log/*.log
-**/*.[oda]
-**/*.lss
-**/*.eep
-**/*.elf
-**/*.hex
-**/*.map
 !demo-shields/**/*.hex
 
 # IntelliJ
