@@ -33,7 +33,7 @@ float temperature;
 
 RunningAverage brightness(10);
 
-const unsigned long SEND_INTERVAL = 250;
+const unsigned long SEND_INTERVAL = 1000;
 unsigned long nextSendMillis = 0;
 
 void send_server_register_params();
@@ -85,7 +85,7 @@ void send_server_register_params() {
   device.messenger->sendCmdArg(85);
   device.messenger->sendCmdArg(SENSOR_BRIGHTNESS);
   device.messenger->sendCmdArg(0);
-  device.messenger->sendCmdArg(1023);
+  device.messenger->sendCmdArg(100);
 }
 
 /**
