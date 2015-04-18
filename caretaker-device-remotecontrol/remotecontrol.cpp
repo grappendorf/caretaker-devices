@@ -98,7 +98,6 @@ unsigned long infoLedOffMillis;
 DeviceDescriptor device;
 
 void send_server_register_params();
-void buttonChanged();
 void deviceOperationalCallback();
 
 #ifdef ENABLE_LOW_POWER
@@ -109,6 +108,7 @@ const unsigned long AWAKE_TIMEOUT_SECONDS = 3;
 unsigned long enterSleepModeMillis;
 
 bool isLowBattery();
+void buttonChanged();
 #endif
 
 /**
@@ -128,7 +128,9 @@ void setup() {
   for (uint8_t i = 0; i < NUM_BUTTONS; ++i) {
     pinMode(buttonPins[i], INPUT);
     digitalWrite(buttonPins[i], HIGH);
+#ifdef ENABLE_LOW_POWER
     PCattachInterrupt(buttonPins[i], buttonChanged, CHANGE);
+#endif
   }
 
 #ifdef ENABLE_LOW_POWER
@@ -227,11 +229,11 @@ bool isLowBattery() {
 /**
  * This is the interrupt routine, triggered by the pin change interrupt.
  */
-void buttonChanged() {
 #ifdef ENABLE_LOW_POWER
+void buttonChanged() {
   enterSleepModeMillis = millis() + (AWAKE_TIMEOUT_SECONDS + 2) * 1000;
-#endif
 }
+#endif
 
 /**
  * Called when the device enters the operational state.
