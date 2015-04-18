@@ -34,6 +34,9 @@
 #define MSG_REFLOW_OVEN_STATE   20
 #define MSG_BUTTON_READ         21
 #define MSG_BUTTON_STATE        22
+#define MSG_ROTARY_READ         23
+#define MSG_ROTARY_WRITE        24
+#define MSG_ROTARY_STATE        25
 
 /** Value write modes */
 #define WRITE_DEFAULT            0
