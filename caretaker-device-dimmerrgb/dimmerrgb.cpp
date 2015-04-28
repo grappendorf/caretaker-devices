@@ -7,12 +7,12 @@
  * You find a copy of license in the root directory of this project
  */
 
-#include <Arduino.h>
-#include <Bounce/Bounce.h>
-#include <device.h>
+#include "Arduino.h"
+#include "Bounce.h"
+#include "../caretaker-device/device.h"
 
-//#define BOARD_TYPE_SPOEKA
-#define BOARD_TYPE_DEMO_SHIELD
+#define BOARD_TYPE_SPOEKA
+//#define BOARD_TYPE_DEMO_SHIELD
 
 // Configuration for the Spoeka board
 #ifdef BOARD_TYPE_SPOEKA
@@ -56,6 +56,13 @@ void rgb_read();
  * Main system setup.
  */
 void setup() {
+  device.type = "DimmerRgb";
+  device.description = DEVICE_DESCRIPTION;
+  device.ledPin = INFO_LED_PIN;
+  device.buttonPin = SYS_BUTTON_PIN;
+  device.registerMessageHandlers = register_message_handlers;
+  deviceInit(device);
+
   pinMode(LED_RED_PIN, OUTPUT);
   pinMode(LED_GREEN_PIN, OUTPUT);
   pinMode(LED_BLUE_PIN, OUTPUT);
@@ -64,12 +71,6 @@ void setup() {
   digitalWrite(LED_BLUE_PIN, LOW);
   pinMode(SYS_BUTTON_PIN, INPUT);
   digitalWrite(SYS_BUTTON_PIN, HIGH);
-  device.type = "DimmerRgb";
-  device.description = DEVICE_DESCRIPTION;
-  device.ledPin = INFO_LED_PIN;
-  device.buttonPin = SYS_BUTTON_PIN;
-  device.registerMessageHandlers = register_message_handlers;
-  deviceInit(device);
 }
 
 /**

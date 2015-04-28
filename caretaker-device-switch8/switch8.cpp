@@ -7,8 +7,8 @@
  * You find a copy of license in the root directory of this project
  */
 
-#include <Arduino.h>
-#include <device.h>
+#include "Arduino.h"
+#include "../caretaker-device/device.h"
 
 /** Digital I/O pin numbers */
 const uint8_t PIN_SWITCH0 = 8;

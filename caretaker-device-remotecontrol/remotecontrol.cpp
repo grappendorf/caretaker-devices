@@ -24,14 +24,14 @@
  * Extended: 0xFD
  */
 
-#include <Arduino.h>
-#include <avr/sleep.h>
-#include <avr/power.h>
-#include <avr/io.h>
-#include <avr/eeprom.h>
-#include <PinChangeInt/PinChangeInt.h>
-#include <device.h>
-#include <Bounce/Bounce.h>
+#include "Arduino.h"
+#include "avr/sleep.h"
+#include "avr/power.h"
+#include "avr/io.h"
+#include "avr/eeprom.h"
+#include "PinChangeInt.h"
+#include "Bounce.h"
+#include "../caretaker-device/device.h"
 
 #define BOARD_TYPE_REMOTE_CONTROL
 //#define BOARD_TYPE_DEMO_SHIELD

@@ -7,14 +7,23 @@
  * You find a copy of license in the root directory of this project
  */
 
-#include <Arduino.h>
-#include <OneWire/OneWire.h>
-#include <DallasTemperature/DallasTemperature.h>
-#include <RunningAverage/RunningAverage.h>
-#include <device.h>
+#include "Arduino.h"
+#include "OneWire.h"
+#include "DallasTemperature.h"
+#include "RunningAverage.h"
+#include "../caretaker-device/device.h"
 
-//#define BOARD_TYPE_SENSORS
-#define BOARD_TYPE_DEMO_SHIELD
+#define BOARD_TYPE_SENSORS
+//#define BOARD_TYPE_DEMO_SHIELD
+
+// Pin assignments for the sensors board
+#ifdef BOARD_TYPE_SENSORS
+#define DEVICE_DESCRIPTION "Sensors"
+const uint8_t INFO_LED_PIN = 13;
+const uint8_t SYS_BUTTON_PIN = 12;
+const uint8_t ONEWIRE_PIN = 8;
+const uint8_t PHOTORESISTOR_PIN = A0;
+#endif
 
 // Pin assignments for the demo shield board
 #ifdef BOARD_TYPE_DEMO_SHIELD

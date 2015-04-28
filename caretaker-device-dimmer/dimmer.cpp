@@ -13,9 +13,9 @@
  * in the Elektor magazin February 2011 on pages 48 ff.
  */
 
-#include <Arduino.h>
-#include <Bounce/Bounce.h>
-#include <device.h>
+#include "Arduino.h"
+#include "Bounce.h"
+#include "../caretaker-device/device.h"
 
 /** Digital I/O pin numbers */
 const int INFO_LED_PIN = 8;

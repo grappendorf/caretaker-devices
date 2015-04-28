@@ -55,13 +55,13 @@
  */
 #define CARETAKER
 
-#include <Arduino.h>
-#include <LiquidCrystal440/LiquidCrystal440.h>
-#include <Bounce/Bounce.h>
-#include <PID/PID.h>
-#include <Adafruit_MAX31855/Adafruit_MAX31855.h>
+#include "Arduino.h"
+#include "LiquidCrystal440.h"
+#include "Bounce.h"
+#include "PID.h"
+#include "Adafruit_MAX31855.h"
 #ifdef CARETAKER
-#include <device.h>
+#include "../caretaker-device/device.h"
 #endif
 
 // IO pins

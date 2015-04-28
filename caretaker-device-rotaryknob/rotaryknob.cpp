@@ -7,14 +7,14 @@
  * You find a copy of license in the root directory of this project
  */
 
-#include <Arduino.h>
-#include <ClickEncoder/ClickEncoder.h>
-#include <TimerOne/TimerOne.h>
-#include <MultiMap/MultiMap.h>
-#include <device.h>
+#include "Arduino.h"
+#include "ClickEncoder.h"
+#include "TimerOne.h"
+#include "MultiMap.h"
+#include "../caretaker-device/device.h"
 
-//#define BOARD_TYPE_ROTARYKNOB
-#define BOARD_TYPE_DEMO_SHIELD
+#define BOARD_TYPE_ROTARYKNOB
+//#define BOARD_TYPE_DEMO_SHIELD
 
 // Configuration for the Rotary Knob wall device
 #ifdef BOARD_TYPE_ROTARYKNOB

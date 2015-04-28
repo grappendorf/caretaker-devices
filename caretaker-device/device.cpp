@@ -7,9 +7,9 @@
  * You find a copy of license in the root directory of this project
  */
 
-#include <Arduino.h>
-#include <WiFi_Shield/WiFly.h>
-#include <EEPROMEx/EEPROMex.h>
+#include "Arduino.h"
+#include "WiFly.h"
+#include "EEPROMex.h"
 #include "device.h"
 
 #ifdef DEBUG

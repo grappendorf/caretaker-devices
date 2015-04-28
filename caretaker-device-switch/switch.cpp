@@ -7,11 +7,21 @@
  * You find a copy of license in the root directory of this project
  */
 
-#include <Arduino.h>
-#include <Bounce/Bounce.h>
-#include <device.h>
+#include "Arduino.h"
+#include "Bounce.h"
+#include "../caretaker-device/device.h"
 
-#define BOARD_TYPE_DEMO_SHIELD
+#define BOARD_TYPE_SWITCH
+//#define BOARD_TYPE_DEMO_SHIELD
+
+// Configuration for switch board
+#ifdef BOARD_TYPE_SWITCH
+#define DEVICE_DESCRIPTION "Single port switch"
+const uint8_t INFO_LED_PIN = 13;
+const uint8_t SYS_BUTTON_PIN = 12;
+const uint8_t SWITCH_PIN = 9;
+const uint8_t MAUNAL_BUTTON_PIN = 8;
+#endif
 
 // Pin assignments for the demo shield board
 #ifdef BOARD_TYPE_DEMO_SHIELD

@@ -7,10 +7,10 @@
  * You find a copy of license in the root directory of this project
  */
 
-#include <Arduino.h>
-#include <SoftwareSerial/SoftwareSerial.h>
-#include <EasyVR/EasyVR.h>
-#include <device.h>
+#include "Arduino.h"
+#include "SoftwareSerial.h"
+#include "EasyVR.h"
+#include "../caretaker-device/device.h"
 
 const int NUM_BUTTONS = 10;
 

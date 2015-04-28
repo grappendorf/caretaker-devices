@@ -7,18 +7,18 @@
  * You find a copy of license in the root directory of this project
  */
 
-#include <messages.h>
-#include <CmdMessenger/CmdMessenger.h>
+#include "messages.h"
+#include "CmdMessenger.h"
 
 #ifndef _DEVICE_H
 #define _DEVICE_H
 
 // The WiFly serial device
-#define WIFLY_SERIAL_HARDWARE
-//#define WIFLY_SERIAL_SOFTWARE
+//#define WIFLY_SERIAL_HARDWARE
+#define WIFLY_SERIAL_SOFTWARE
 #define WIFLY_RXD_PIN 2
 #define WIFLY_TXD_PIN 3
-#define WIFLY_BAUDRATE 57600
+#define WIFLY_BAUDRATE 9600
 
 // Define to set a non standard (55555) broadcast port
 //#define BROADCAST_PORT 44444
@@ -30,14 +30,14 @@
 //#define DEBUG
 
 // The debug serial device
-//#define DEBUG_SERIAL_HARDWARE
-#define DEBUG_SERIAL_SOFTWARE
+#define DEBUG_SERIAL_HARDWARE
+//#define DEBUG_SERIAL_SOFTWARE
 #define DEBUG_RXD_PIN 2
 #define DEBUG_TXD_PIN 3
 #define DEBUG_BAUDRATE 9600
 
 #if (defined WIFLY_SERIAL_SOFTWARE) || (defined DEBUG && defined DEBUG_SERIAL_SOFTWARE)
-#include <SoftwareSerial/SoftwareSerial.h>
+#include "SoftwareSerial.h"
 #endif
 
 typedef struct _DeviceDescriptor {
