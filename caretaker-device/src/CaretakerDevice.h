@@ -39,7 +39,7 @@
 #define DEBUG_BAUDRATE 9600
 
 #if (defined WIFLY_SERIAL_SOFTWARE) || (defined DEBUG && defined DEBUG_SERIAL_SOFTWARE)
-#iinclude "SoftwareSerial.h"
+#include "SoftwareSerial.h"
 #endif
 
 typedef struct _DeviceDescriptor {
