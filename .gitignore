@@ -1,13 +1,5 @@
-# Generated content
 *.s#?
 *.b#?
 log/*.log
 !demo-shields/**/*.hex
-
-# IntelliJ
-atlassian-ide-plugin.xml
-workspace.xml
-*/.idea/tasks.xml
-
-# Sublime
-*.sublime-workspace
+.idea

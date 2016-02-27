@@ -1,6 +1,4 @@
-build/*.[oda]
-build/*.lss
-build/*.eep
-build/*.elf
-build/*.hex
-build/*.map
+.pioenvs
+.clang_complete
+.gcc-flags.json
+*.gch
