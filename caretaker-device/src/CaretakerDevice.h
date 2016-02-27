@@ -16,8 +16,8 @@
 #define _DEVICE_H
 
 // The WiFly serial device
-#define WIFLY_SERIAL_HARDWARE
-// #define WIFLY_SERIAL_SOFTWARE
+// #define WIFLY_SERIAL_HARDWARE
+#define WIFLY_SERIAL_SOFTWARE
 #define WIFLY_RXD_PIN 2
 #define WIFLY_TXD_PIN 3
 #define WIFLY_BAUDRATE 9600

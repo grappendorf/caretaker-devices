@@ -13,8 +13,8 @@
 #include <RunningAverage.h>
 #include <CaretakerDevice.h>
 
-#define BOARD_TYPE_SENSORS
-//#define BOARD_TYPE_DEMO_SHIELD
+// #define BOARD_TYPE_SENSORS
+#define BOARD_TYPE_DEMO_SHIELD
 
 // Pin assignments for the sensors board
 #ifdef BOARD_TYPE_SENSORS

@@ -11,8 +11,8 @@
 #include <Bounce.h>
 #include <CaretakerDevice.h>
 
-#define BOARD_TYPE_SPOEKA
-//#define BOARD_TYPE_DEMO_SHIELD
+// #define BOARD_TYPE_SPOEKA
+#define BOARD_TYPE_DEMO_SHIELD
 
 // Configuration for the Spoeka board
 #ifdef BOARD_TYPE_SPOEKA

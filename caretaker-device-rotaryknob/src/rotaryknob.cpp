@@ -13,8 +13,8 @@
 #include <MultiMap.h>
 #include <CaretakerDevice.h>
 
-#define BOARD_TYPE_ROTARYKNOB
-//#define BOARD_TYPE_DEMO_SHIELD
+// #define BOARD_TYPE_ROTARYKNOB
+#define BOARD_TYPE_DEMO_SHIELD
 
 // Configuration for the Rotary Knob wall device
 #ifdef BOARD_TYPE_ROTARYKNOB
