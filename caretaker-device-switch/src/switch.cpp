@@ -20,7 +20,7 @@
 const uint8_t INFO_LED_PIN = 13;
 const uint8_t SYS_BUTTON_PIN = 12;
 const uint8_t SWITCH_PIN = 9;
-const uint8_t MAUNAL_BUTTON_PIN = 8;
+const uint8_t MANUAL_BUTTON_PIN = 8;
 #endif
 
 // Pin assignments for the demo shield board
@@ -29,14 +29,14 @@ const uint8_t MAUNAL_BUTTON_PIN = 8;
 const uint8_t INFO_LED_PIN = 13;
 const uint8_t SYS_BUTTON_PIN = 12;
 const uint8_t SWITCH_PIN = 9;
-const uint8_t MAUNAL_BUTTON_PIN = 8;
+const uint8_t MANUAL_BUTTON_PIN = 8;
 #endif
 
 const uint8_t NUM_SWITCHES = 1;
 
 DeviceDescriptor device;
 
-Bounce button(MAUNAL_BUTTON_PIN, 5);
+Bounce button(MANUAL_BUTTON_PIN, 5);
 
 void send_server_register_params();
 void register_message_handlers();
@@ -55,8 +55,8 @@ void setup() {
   device.sendServerRegisterParams = send_server_register_params;
   deviceInit(device);
 
-  pinMode(MAUNAL_BUTTON_PIN, INPUT);
-  digitalWrite(MAUNAL_BUTTON_PIN, HIGH);
+  pinMode(MANUAL_BUTTON_PIN, INPUT);
+  digitalWrite(MANUAL_BUTTON_PIN, HIGH);
 
   pinMode(SWITCH_PIN, OUTPUT);
 }
