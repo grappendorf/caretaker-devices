@@ -10,29 +10,7 @@
 #include <Arduino.h>
 #include <Bounce.h>
 #include <CaretakerDevice.h>
-
-// #define BOARD_TYPE_SWITCH
-#define BOARD_TYPE_DEMO_SHIELD
-
-// Configuration for switch board
-#ifdef BOARD_TYPE_SWITCH
-#define DEVICE_DESCRIPTION "Single port switch"
-const uint8_t INFO_LED_PIN = 13;
-const uint8_t SYS_BUTTON_PIN = 12;
-const uint8_t SWITCH_PIN = 9;
-const uint8_t MANUAL_BUTTON_PIN = 8;
-#endif
-
-// Pin assignments for the demo shield board
-#ifdef BOARD_TYPE_DEMO_SHIELD
-#define DEVICE_DESCRIPTION "Single switch demo shield"
-const uint8_t INFO_LED_PIN = 13;
-const uint8_t SYS_BUTTON_PIN = 12;
-const uint8_t SWITCH_PIN = 9;
-const uint8_t MANUAL_BUTTON_PIN = 8;
-#endif
-
-const uint8_t NUM_SWITCHES = 1;
+#include "switch.h"
 
 DeviceDescriptor device;
 
@@ -43,11 +21,13 @@ void register_message_handlers();
 void switch_read();
 void switch_write();
 
+unsigned long nextBlinkMillis = 0;
+
 /**
  * System setup.
  */
 void setup() {
-  device.type = "Switch";
+  device.type = DEVICE_TYPE;
   device.description = DEVICE_DESCRIPTION;
   device.ledPin = INFO_LED_PIN;
   device.buttonPin = SYS_BUTTON_PIN;
@@ -59,6 +39,7 @@ void setup() {
   digitalWrite(MANUAL_BUTTON_PIN, HIGH);
 
   pinMode(SWITCH_PIN, OUTPUT);
+  digitalWrite(SWITCH_PIN, LOW);
 }
 
 /**
@@ -67,6 +48,10 @@ void setup() {
 void loop() {
   deviceUpdate();
   if (deviceIsOperational()) {
+    // if (millis() > nextBlinkMillis) {
+    //   digitalWrite(SWITCH_PIN, digitalRead(SWITCH_PIN) == HIGH ? LOW : HIGH);
+    //   nextBlinkMillis = millis() + 1000;
+    // }
     button.update();
     if (button.fallingEdge()) {
       digitalWrite(SWITCH_PIN, digitalRead(SWITCH_PIN) == HIGH ? LOW : HIGH);
