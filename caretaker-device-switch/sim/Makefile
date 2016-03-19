@@ -15,5 +15,5 @@ dockerrun: dockerimage
 	docker run --name caretaker-switch -d --net caretaker grappendorf/caretaker-device-switch -s workspace-caretaker-server -r caretaker-redis switch
 
 clean:
-	-docker rmi grappendorf/caretaker-device-switch:0.0.1
+	-docker rmi grappendorf/caretaker-device-switch
 	rm -f sim
