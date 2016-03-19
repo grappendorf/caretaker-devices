@@ -15,4 +15,5 @@ dockerrun: dockerimage
 	docker run --name caretaker-remotecontrol -d --net caretaker grappendorf/caretaker-device-remotecontrol -s workspace-caretaker-server -r caretaker-redis remote
 
 clean:
+	-docker rmi grappendorf/caretaker-device-remotecontrol
 	rm -f sim
