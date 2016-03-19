@@ -1,0 +1,12 @@
+{
+  "name": "caretaker-device-simulator",
+  "version": "0.0.1",
+  "authors": [
+    "Dirk Grappendorf <dirk@grappendorf.net>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "paper-button": "PolymerElements/paper-button#^1.0.0",
+    "paper-card": "PolymerElements/paper-card#^1.0.0"
+  }
+}

@@ -1,5 +1,7 @@
 *.s#?
 *.b#?
-log/*.log
+*.log
 !demo-shields/**/*.hex
 .idea
+*.gch
+sim

@@ -1,0 +1,79 @@
+<link href="device-switch.html" rel="import">
+<link href="device-remotecontrol.html" rel="import">
+
+<dom-module id="devices-panel">
+
+  <style>
+    .devices-panel {
+      padding: 20px 10px;
+    }
+  </style>
+
+  <template>
+    <div class="devices-panel" layout horizontal wrap>
+      <template is="dom-repeat" items="[[devices]]" as="device">
+        <template is="dom-if" if="[[_isDeviceType(device.type, 'Switch')]]">
+          <device-switch device="[[device]]" redis="[[redis]]"></device-switch>
+        </template>
+        <template is="dom-if" if="[[_isDeviceType(device.type, 'RemoteControl')]]">
+          <device-remotecontrol device="[[device]]" redis="[[redis]]"></device-remotecontrol>
+        </template>
+      </template>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'devices-panel',
+      properties: {
+        redis: {type: Object}
+      },
+      ready() {
+        this.devices = [];
+      },
+      attached() {
+        this.redis.rawCall(['KEYS', 'caretaker.devices.*'], (e, data) => {
+          data.forEach((key) => {
+            var deviceId = /.+\.(.+)/.exec(key)[1];
+            this._fetchDevice(deviceId);
+          });
+        });
+        this.pubsub.rawCall(['PSUBSCRIBE', '__keyspace@0__:caretaker.devices.*'], (e, data) => {
+          if (data[0] == 'pmessage') {
+            var deviceId = /.+:.+\.(.+)/.exec(data[2])[1];
+            if (data[3] == 'del') {
+              var index = this.devices.findIndex(device => device.id == deviceId);
+              this.splice('devices', index, 1);
+            } else {
+              this._fetchDevice(deviceId);
+            }
+          }
+        });
+      },
+      _fetchDevice(deviceId) {
+        this.redis.rawCall(['HGETALL', `caretaker.devices.${deviceId}`], (e, data) => {
+          var index = this.devices.findIndex(device => device.id == deviceId)
+          if (index == -1) {
+            var device = this._convertArrayToObject(data);
+            this.push('devices', device);
+          } else {
+            for (i = 0; i < data.length; i += 2) {
+              this.set(`devices.${index}.${data[i]}`, data[i + 1]);
+            }
+          }
+        });
+      },
+      _convertArrayToObject(array) {
+        var obj = {};
+        for (i = 0; i < array.length; i += 2) {
+          obj[array[i]] = array[i + 1];
+        }
+        return obj;
+      },
+      _isDeviceType(actualType, expectedType) {
+        return actualType == expectedType;
+      }
+    });
+  </script>
+
+</dom-module>

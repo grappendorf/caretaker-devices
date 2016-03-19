@@ -1,0 +1,26 @@
+{
+  "name": "caretaker-device-simulator",
+  "version": "0.0.1",
+  "description": "Caretaker Device Simulator",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/atom/electron-quick-start.git"
+  },
+  "author": "Dirk Grappendorf",
+  "license": "MIT",
+  "homepage": "http://www.grappendorf.net/projects/carekater",
+  "dependencies": {
+    "babel": "6.5.2",
+    "babel-register": "6.7.2",
+    "redis-fast-driver": "1.0.2"
+  },
+  "devDependencies": {
+    "bower": "1.7.7",
+    "electron-prebuilt": "^0.36.0",
+    "electron-reload": "0.2.0"
+  }
+}

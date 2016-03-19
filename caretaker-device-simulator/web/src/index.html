@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Caretaker Device Simulator</title>
+    <link href="../lib/polymer/polymer.html" rel="import">
+    <link href="../lib/paper-card/paper-card.html" rel="import">
+    <link href="../lib/paper-button/paper-button.html" rel="import">
+    <link href="devices-panel.html" rel="import">
+    <link rel="import" href="polymer-theme.html">
+    <link rel="icon" type="image/ico" href="images/favicon.ico">
+  </head>
+  <body>
+    <template is="dom-bind">
+      <devices-panel redis="[[redis]]" pubsub="[[pubsub]]"></devices-panel>
+    </template>
+    <script>
+      var app = document.querySelector('template');
+      var Redis = require('redis-fast-driver');
+      app.redis = new Redis({host: '127.0.0.1', port: 6379});
+      app.redis.rawCall(['CONFIG', 'set', 'notify-keyspace-events', 'KEA']);
+      app.pubsub = new Redis({host: '127.0.0.1', port: 6379});
+    </script>
+  </body>
+</html>
