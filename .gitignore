@@ -4,4 +4,4 @@
 !demo-shields/**/*.hex
 .idea
 *.gch
-sim
+*/sim/sim
