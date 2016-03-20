@@ -20,3 +20,6 @@ uint8_t digitalRead(uint8_t pin) {
   }
   return LOW;
 }
+
+void delay(unsigned long ms) {  
+}

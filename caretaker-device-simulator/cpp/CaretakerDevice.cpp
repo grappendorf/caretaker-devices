@@ -21,9 +21,6 @@ void deviceInit(DeviceDescriptor& descriptor) {
 
 void deviceUpdate() {
   messenger.feedinSerialData();
-}
-
-bool deviceIsOperational() {
   if (! isOperational) {
     if (Simulator::getInstance()->getCurrentMillis() > register_with_server_timeout) {
       Simulator::getInstance()->log("Sending registration request to server");
@@ -39,6 +36,9 @@ bool deviceIsOperational() {
       register_with_server_timeout = Simulator::getInstance()->getCurrentMillis() + REGISTER_TIMEOUT_MS;
     }
   }
+}
+
+bool deviceIsOperational() {
   return isOperational;
 }
 

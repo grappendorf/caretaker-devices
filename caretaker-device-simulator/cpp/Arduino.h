@@ -15,6 +15,7 @@ void pinMode(uint8_t pin, uint8_t mode);
 void digitalWrite(uint8_t pin, uint8_t value);
 uint8_t digitalRead(uint8_t pin);
 unsigned long millis();
+void delay(unsigned long ms);
 
 class Simulator;
 

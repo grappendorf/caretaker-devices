@@ -9,17 +9,8 @@
 
 #include <Arduino.h>
 #include <CaretakerDevice.h>
+#include "switch8.h"
 
-/** Digital I/O pin numbers */
-const uint8_t PIN_SWITCH0 = 8;
-const uint8_t PIN_SWITCH1 = 6;
-const uint8_t PIN_SWITCH2 = 4;
-const uint8_t PIN_SWITCH3 = 2;
-const uint8_t PIN_SWITCH4 = 9;
-const uint8_t PIN_SWITCH5 = 7;
-const uint8_t PIN_SWITCH6 = 5;
-const uint8_t PIN_SWITCH7 = 3;
-const uint8_t PIN_BUZZER = 15;
 
 /** Switch pins by number */
 const uint8_t switchPins[] = { PIN_SWITCH0, PIN_SWITCH1, PIN_SWITCH2, PIN_SWITCH3, PIN_SWITCH4, PIN_SWITCH5,
@@ -60,8 +51,8 @@ void setup()
   delay(50);
   digitalWrite(PIN_BUZZER, LOW);
 
-  device.type = "Switch";
-  device.description = "8-Port Switch";
+  device.type = DEVICE_TYPE;
+  device.description = "8 port switch";
   device.ledPin = 0;
   device.buttonPin = 0;
   device.registerMessageHandlers = registerMessageHandlers;
@@ -74,8 +65,10 @@ void setup()
  */
 void loop()
 {
-  calmDownBeep();
   deviceUpdate();
+  if (deviceIsOperational()) {
+    calmDownBeep();
+  }
 }
 
 /**

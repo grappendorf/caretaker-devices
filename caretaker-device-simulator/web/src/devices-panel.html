@@ -1,4 +1,5 @@
 <link href="device-switch.html" rel="import">
+<link href="device-switch8.html" rel="import">
 <link href="device-remotecontrol.html" rel="import">
 
 <dom-module id="devices-panel">
@@ -12,11 +13,14 @@
   <template>
     <div class="devices-panel" layout horizontal wrap>
       <template is="dom-repeat" items="[[devices]]" as="device">
-        <template is="dom-if" if="[[_isDeviceType(device.type, 'Switch')]]">
+        <template is="dom-if" if="[[_isRemoteControlDevice(device)]]">
+          <device-remotecontrol device="[[device]]" redis="[[redis]]"></device-remotecontrol>
+        </template>
+        <template is="dom-if" if="[[_isSwitchDevice(device)]]">
           <device-switch device="[[device]]" redis="[[redis]]"></device-switch>
         </template>
-        <template is="dom-if" if="[[_isDeviceType(device.type, 'RemoteControl')]]">
-          <device-remotecontrol device="[[device]]" redis="[[redis]]"></device-remotecontrol>
+        <template is="dom-if" if="[[_isSwitch8Device(device)]]">
+          <device-switch8 device="[[device]]" redis="[[redis]]"></device-switch8>
         </template>
       </template>
     </div>
@@ -70,8 +74,14 @@
         }
         return obj;
       },
-      _isDeviceType(actualType, expectedType) {
-        return actualType == expectedType;
+      _isRemoteControlDevice(device) {
+        return device.type == 'RemoteControl';
+      },
+      _isSwitchDevice(device) {
+        return device.type == 'Switch' && device.name != 'switch8';
+      },
+      _isSwitch8Device(device) {
+        return device.type == 'Switch' && device.name == 'switch8';
       }
     });
   </script>

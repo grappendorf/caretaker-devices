@@ -1,0 +1,95 @@
+<dom-module id="device-switch8">
+
+  <template>
+    <style>
+      paper-card {
+        background: #ccc;
+        margin: 10px;
+      }
+      /deep/ .title-text {
+        text-align: center;
+      }
+      .card-content {
+        padding: 0;
+        position: relative;
+      }
+      .device-image {
+        width: 420px;
+      }
+      .led-image {
+        position: absolute;
+        width: 26px;
+        height: 26px;
+        transition: opacity .25s ease-in-out;
+        -moz-transition: opacity .25s ease-in-out;
+        -webkit-transition: opacity .25s ease-in-out;
+      }
+      .led-image-0 {
+        opacity: 0.0;
+      }
+      .led-image-1 {
+        opacity: 1.0;
+      }
+      .led-image0 {
+        left: 61px;
+        top: 30px;
+      }
+      .led-image1 {
+        left: 135px;
+        top: 29px;
+      }
+      .led-image2 {
+        left: 207px;
+        top: 28px;
+      }
+      .led-image3 {
+        left: 279px;
+        top: 26px;
+      }
+      .led-image4 {
+        left: 54px;
+        top: 115px;
+      }
+      .led-image5 {
+        left: 130px;
+        top: 114px;
+      }
+      .led-image6 {
+        left: 208px;
+        top: 114px;
+      }
+      .led-image7 {
+        left: 286px;
+        top: 113px;
+      }
+    </style>
+
+    <paper-card heading="[[device.name]]">
+      <div class="card-content">
+        <img class="device-image" src="images/device-switch8.jpg">
+        <img class$="[[_ledImageClass(0, device.relais0)]]" src="images/switch8-led0.png">
+        <img class$="[[_ledImageClass(1, device.relais1)]]" src="images/switch8-led1.png">
+        <img class$="[[_ledImageClass(2, device.relais2)]]" src="images/switch8-led2.png">
+        <img class$="[[_ledImageClass(3, device.relais3)]]" src="images/switch8-led3.png">
+        <img class$="[[_ledImageClass(4, device.relais4)]]" src="images/switch8-led4.png">
+        <img class$="[[_ledImageClass(5, device.relais5)]]" src="images/switch8-led5.png">
+        <img class$="[[_ledImageClass(6, device.relais6)]]" src="images/switch8-led6.png">
+        <img class$="[[_ledImageClass(7, device.relais7)]]" src="images/switch8-led7.png">
+      </div>
+    </paper-card>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'device-switch8',
+      properties: {
+        redis: {type: Object},
+        device: {type: Object}
+      },
+      _ledImageClass(num, value) {
+        return `led-image led-image${num} led-image-${value}`;
+      }
+    });
+  </script>
+
+</dom-module>
